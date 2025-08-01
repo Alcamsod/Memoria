@@ -3,7 +3,7 @@
 %
 Este trabajo trataba de la optimización del gasto energético de una empresa que contaba con hornos de fundición. Para ello, se tuvieron que realizar predicciones del precio de la electricidad mediante modelos estadísticos. Posteriormente, se modelizó el proceso de fundición llevado a cabo en la fábrica y por último se trató de optimizar la selección de los materiales a fundir, dependiendo del espacio disponible en fábrica y el precio de la luz en cada tramo horario, estimado previamente.\\
 
-A continuación, muestro una introducción a cada una de las partes mencionadas, con ejemplos o explicaciones del proceso. Como se ha dicho anteriormente, por motivos de confidencialidad no se pueden mostrar resultados o código explícito porque podría involucrar datos privados del proyecto o de la empresa cliente.
+Por motivos de extensión, y porque es la parte a la que más tiempo he dedicado, la sección asociada a la predicción de precios de la luz será la más extensa y detallada. Respecto del modelado y proceso de optimización se explicará más brevemente, además de que puden incluir información privada del cliente por lo que no se incidirá demasiado.
 %
 %
 \subsection{Predicción de precios de la luz}
@@ -11,9 +11,16 @@ A continuación, muestro una introducción a cada una de las partes mencionadas,
 %
 %
 %
-Para llevar a cabo la predicción del coste energético, se procedió en primer lugar al análisis de la serie temporal de precios de la electricidad. Este incluyó la generación de diversas gráficas, tales como series de tiempo o diagramas de autocorrelación simple (ACF) y parcial (PACF), con el fin de comprender la estacionalidad y el comportamiento de la varianza.\\
+Para llevar a cabo un modelo predictivo de de los precios de la luz para una empresa hemos de realizar una serie de pasos. En primer lugar, como es evidente, debemos conocer y entender qué es lo que queremos predecir, bajo qué condiciones y qué variables afectan al precio de la luz, tanto naturales, como puede ser la demanda, la generación de ciertos tipos de energía, como aquellas relacionadas con la legislación vigente. Posteriormente debemos decidir cómo se extraeran los datos necesarios. Puesto que estamos hablando de un proyecto real, la empresa espera un proceso automatizado por lo que se debe tener en cuenta una extracción periódica de datos.\\
 
-Concretamente, se utilizó como fuente de datos el mercado diario SPOT de electricidad en España. Los datos se obtuvieron a través de la API pública proporcionada por ESIOS (Sistema de Información del Operador del Sistema Eléctrico), que permite acceder a los precios horarios históricos, así como a otros indicadores del sistema eléctrico.
+Una vez planteado el contexto en el que vamos a movernos, debemos decidir qué modelos probar, conociendo sus ventajas y desventajas. Mi elección, basada en búsquedas de desarrollos similares, fue optar por tres modelos:
+\begin{description}
+    \item[SARIMAX] Modelo estadístico clásico
+    \item[XGBoost] Modelo de \textit{machine learning}
+    \item[TFT] Modelo de \textit{deep learning}
+\end{description}
+
+Por último, por requisitos del proyecto, la predicción se realizaba a un mes vista, lo cual como es lógico, no es óptimo. Sin embargo, esto era algo fijo por lo que los resultados esperados son mejorables, recortando el horizonte de predicción y reentrenado los modelos con mayor asiduidad.
 %
 %
 %
@@ -21,82 +28,111 @@ Concretamente, se utilizó como fuente de datos el mercado diario SPOT de electr
 %
 %
 %
-Antes de abordar la predicción, se realizó un estudio del funcionamiento del mercado eléctrico español y de la normativa que afecta a las industrias electrointensivas. Esta revisión fue clave para entender qué variables influyen realmente en la factura energética de un cliente industrial, más allá del precio medio horario.\\
+Dado que la empresa es una electrointensiva no se rige por el régimen general del pequeño consumidor (PVPC). Para la toma de datos de la variable objetivo, el precio de la luz, se consultó el precio del mercado SPOT diario, que es el que regula la venta de luz al por mayor.\\
 
-Por ejemplo, el cliente indicó que una parte importante del coste final se debía a excesos en el consumo en ciertas franjas horarias o a penalizaciones asociadas a picos de demanda. Esto motivó no solo la necesidad de predecir el precio por hora, sino también de incorporar restricciones operativas en la fase de optimización basadas en el conocimiento regulatorio del sector.
+Para calcular exactamente, dentro de lo que podemos entender como \textit{exacto} en un modelo de predicción, el precio de la luz debemos tener en cuenta tanto el precio de venta como los peajes. Estos últimos son valor añadido a la factura de la luz que depende del tipo de empresa y de la hora de consumo. De cualquier forma, en lo que a nuestro modelo se refiere, únicamente nos interesa el preio del mercado SPOT diario, que viene dado de manera horaria.
 %
 %
 %
-\subsubsection{Obtención de los datos}
+\subsubsection{Obtención y preparación de los datos}
 %
 %
 %
-Los datos horarios del precio de la electricidad se descargaron mediante la API de ESIOS, para un rango histórico de 2023-2025 con el fin de capturar tanto patrones estacionales diarios como semanales y mensuales. Además, se recopilaron otras variables externas relevantes para la predicción, como el precio del gas natural, la demanda eléctrica real en España, y la generación horaria de energía solar y eólica. Estas variables exógenas se incorporaron al modelo con el objetivo de mejorar la capacidad predictiva, al reflejar condiciones del sistema que tienen un impacto directo en la formación del precio del mercado. Adicionalmente, se implementó un proceso automático de actualizació diaria de los datos, de modo que su pudiera reentrenar el modelo de manera regular.
-%
-%
-%
-\subsubsection{Elección del modelo}
-%
-%
-%
-Se trabajó con dos enfoques distintos para la predicción: un modelo estadístico basado en SARIMAX y un modelo de \textit{deep learning} basado en \textit{Temporal Fusion Transformers} (TFT).\\
+Los datos se obtuvieron a través de la API pública proporcionada por ESIOS (Sistema de Información del Operador del Sistema Eléctrico), que permite acceder a los precios horarios históricos, así como a otros indicadores del sistema eléctrico. De manera adicional al precio de la luz, y como se ha comentado previamente, se tomaron variables explicativas, es decir, que se cree que tienen relación y afectan al precio de la que queremos. En este caso, se tomó: La demanda real de consumo, la generación de energía eólica y solar.\\
 
-El modelo \textit{SARIMAX} permite modelar series temporales con estacionalidad y con variables exógenas. En este caso, se consideró una estacionalidad diaria de 24 horas, con órdenes de diferenciación \(d = D = 1\), y se dejaron abiertos los parámetros \(p, q, P, Q\) a seleccionar según el análisis de los correlogramas ACF y PACF. Las variables exógenas incluyeron la demanda real, la producción eólica y solar, y el precio del gas. La selección del modelo se basó en el análisis de estacionariedad (test de Dickey-Fuller aumentado) e inspección visual de autocorrelaciones.\\
+En lo relativo a la preparación de los datos, salvando las diferencias en función de la implementación del modelo, el procedimiento fue similar: Una vez descargados los datos se formatean de manera que tengamos aquellos valores que queremos, es decir, el precio, demanda, etc. y la fecha en la que se dio. Además, de cara a refinar nuestro modelo, se introdujeron variables temporales como el día de la semana, día del mes o mes del año. Un estudio mucho más exaustivo puede hacerse incluyendo más variables o con más combinaciones. En \cite{TFG_prediccion} puede verse como incluyen el precio del gas o la emisión de CO$_2$ entre otro, llevándoles a mejores resultados, aunque con mayor trabajo.
+%
+%
+%
+\subsubsection{Análisis exploratorio}
+%
+%
+%
 
-Por otro lado, se aplicó también un modelo \textit{Temporal Fusion Transformers} (TFT), un tipo de red neuronal recurrente avanzada, diseñada específicamente para problemas de series temporales multivariadas. Este modelo combina mecanismos de atención con una arquitectura interpretable y es capaz de capturar relaciones complejas a largo y corto plazo. El TFT permite incorporar múltiples variables exógenas, manejar datos faltantes y adaptarse bien a estacionalidades no lineales. En este caso, se le proporcionó como entrada no solo la serie de precios, sino también las variables exógenas mencionadas anteriormente. El modelo fue entrenado para predecir el precio horario con horizonte de un mes y se validó mediante un conjunto de datos independiente (\textit{test set}). Las figuras correspondientes al entrenamiento y validación se muestran a continuación.
 %
 %
 %
+\subsubsection{SARIMAX}
+%
+%
+%
+Este es un modelo modelo autorregresivo que incorpora la relación de la variable endógena (el precio de la luz) con sus \textit{lags} (rezazgos) y variables exógenas que pueden influir sobre él. La ventaja de este modelo es que es relativamente sencillo de implementar y de entender, por lo que permite una gran manejabilidad en cuanto a los parámetros a introducir y los resultados obtenidos.\\
+
+El modelo SARIMAX se basa en varias suposiciones clave. La más importante es que la serie de datos sea \textit{estacionaria}. Esto significa que sus propiedades estadísticas, como la media y la varianza, deben ser constantes a lo largo del tiempo. Además, se asume que los residuos del modelo son ruido blanco, es decir, que son independientes e idénticamente distribuidos, con media cero y varianza constante. También se considera que no hay autocorrelación en los residuos.\\
+
+El modelo SARIMAX viene caracterizado por los parámetros $(p,d,q)x(P,D,Q,s)$ donde:
+\begin{itemize}
+    \item[$p$]: Orden del componente autorregresivo (AR) no estacional. Indica el número de rezagos de la variable endógena que se incluyen en el modelo.
+    \item[$d$]: Orden de diferenciación no estacional. Representa la cantidad de veces que se deben diferenciar los datos para hacer la serie estacionaria.
+    \item[$q$]: Orden del componente de media móvil (MA) no estacional. Indica el número de rezagos del error del pronóstico que se incluyen en el modelo.
+    \item[$P$]: Orden del componente autorregresivo (AR) estacional.
+    \item[$D$]: Orden de diferenciación estacional.
+    \item[$Q$]: Orden del componente de media móvil (MA) estacional.
+    \item[$s$]: Período de estacionalidad, en este caso vemos que $s=24$ de manera natural al tratarse de precios horarios.
+\end{itemize}
+
+Para determinar los órdenes de los parámetros del modelo, se analizan las funciones de autocorrelación (ACF) y autocorrelación parcial (PACF). La ACF mide la correlación de la serie consigo misma en diferentes rezagos, mientras que la PACF mide esta misma correlación eliminando la influencia de los rezagos intermedios.\\
+
+En las siguientes imágenes podemos ver los gráficos de ACF y PACF para la serie de precios de la luz, lo que nos permite identificar los patrones de estacionalidad y los órdenes de los modelos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figuras/ACF_PACF.png}
+    \caption{ACF y PACF de la serie de precios de la luz sin diferenciar. Se observa una clara estacionalidad y una autocorrelación que decae lentamente, lo que sugiere la necesidad de diferenciación.}
+    \label{fig:ACF_sin_diferenciar}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figuras/ACF_PACF.png}
+    \caption{ACF y PACF de la serie de precios con diferenciación estacional. Aunque la estacionalidad ha sido eliminada, la autocorrelación no estacional aún persiste.}
+    \label{diferenciado}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figuras/ACF_PACF.png}
+    \caption{ACF y PACF de la serie con diferenciación doble. Ahora la serie es estacionaria y los rezagos significativos nos indican los posibles órdenes $p, q, P, Q$.}
+    \label{dobledifereniado}
+\end{figure}
+
+Basado en el análisis de las funciones de autocorrelación, se han preseleccionado los siguientes tres modelos con sus respectivos parámetros:
+
+\begin{itemize}
+    \item \textbf{Modelo 1: SARIMAX(1,1,1)x(1,1,1,24)}:
+    Se elige este modelo porque los picos en los gráficos de ACF y PACF de la serie doblemente diferenciada son significativos en el primer rezago no estacional y estacional. Esto sugiere un orden de 1 para los componentes AR, MA, y sus contrapartes estacionales.
+
+    \item \textbf{Modelo 2: SARIMAX(0,1,1)x(0,1,1,24)}:
+    Este modelo se considera debido a que, en el gráfico PACF, los picos son más pronunciados en los primeros rezagos, lo que podría indicar la preponderancia de los términos de media móvil.
+
+    \item \textbf{Modelo 3: SARIMAX(2,1,0)x(2,1,0,24)}:
+    Se opta por este modelo como alternativa, ya que los gráficos de ACF y PACF también muestran una posible influencia de los segundos rezagos, tanto estacionales como no estacionales.
+\end{itemize}
+
+Estos tres modelos serán evaluados y comparados utilizando métricas como el MAE y el RMSE para determinar cuál de ellos ofrece un mejor ajuste a los datos.
+%
+%
+%
+\subsubsection{XGBoost}
+%
+%
+%
+Este modelo, basado en árboles de decisión, también relativamente sencillo de implementar aunque, como es habitual en este tipo de modelos, menor interpretabilidad de lo que ocurre dentro del algoritmo. Su robustez viene por la capacidad de aprender patrones complejos pero mejorado mediante técnicas de aproximación en las funciones de pérdida y regularización. Esta segunda suele ser la primera que se mira cuando se trata de modelos predictivos puesto que habla de la precisión del mismo, sin embargo, XGBoost permite la regularización de manera que evitemos el \textit{overfitting} (sobreajuste), es decir, que durante la etapa de entrenamiento el modelo adopte patrones demasiado complejos, propios del conjunto introducido de manera que pierda generalidad y por ello no sea capaz de realizar buenas predicciones.
+%
+%
+%
+\subsubsection{TFT}
+%
+%
+%
+Este modelo es uno de los más avanzados, estado del arte en diversas áreas. Su funcionamiento es más complejo aunque puede entenderse la estructura (ver pre-print original \cite{TFT}). Por dar una breve explicación
+%
+%
+%
+
 \subsubsection{Resultados}
 %
 %
 %
-Ambos modelos permitieron generar una predicción horaria de los precios de la electricidad, que posteriormente se utilizó como entrada para el problema de optimización descrito en la sección siguiente. Las predicciones del modelo SARIMAX mostraron una buena capacidad para capturar patrones estacionales regulares, mientras que el modelo TFT demostró una mejor adaptación a comportamientos más complejos o inusuales del sistema eléctrico.
 
-El uso combinado de modelos permitió contrastar la robustez de las predicciones, y facilitó el diseño de estrategias operativas más informadas para la gestión energética en contextos industriales.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\linewidth]{figuras/histoico.png}
-    \caption{Serie temporal del precio horario de la electricidad (mercado SPOT español).}
-    \label{graficacometa}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\linewidth]{figuras/ACF_PACF.png}
-    \caption{Diagramas de autocorrelación (ACF) y autocorrelación parcial (PACF).}
-    \label{ACFPACF}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\linewidth]{figuras/residuos_ARIMA.png}
-    \caption{Residuos del modelo SARIMAX tras ajuste.}
-    \label{residuos}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\linewidth]{figuras/varianza_ARIMA.png}
-    \caption{Evaluación de la varianza residual del modelo SARIMAX.}
-    \label{fig:varianaza-label}
-\end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.6\linewidth]{figuras/TFT_predicciones.png}
-%     \caption{Predicción horaria con modelo TFT (captura de código o resultados).}
-%     \label{fig:tft-pred}
-% \end{figure}
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.6\linewidth]{figuras/TFT_loss.png}
-%     \caption{Curva de pérdida y métricas de validación del modelo TFT.}
-%     \label{fig:tft-loss}
-% \end{figure}
-%
 %
 \subsection{Modelo físico}
 %
