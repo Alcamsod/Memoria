@@ -56,22 +56,44 @@ En lo relativo a la preparación de los datos, salvando las diferencias en funci
 %
 %
 %
-Este es un modelo modelo autorregresivo que incorpora la relación de la variable endógena (el precio de la luz) con sus \textit{lags} (rezazgos) y variables exógenas que pueden influir sobre él. La ventaja de este modelo es que es relativamente sencillo de implementar y de entender, por lo que permite una gran manejabilidad en cuanto a los parámetros a introducir y los resultados obtenidos.\\
+Este es un modelo estadístico clásico para la predicción de series temporales. Su fortaleza radica en su capacidad para modelar explícitamente tres componentes clave de la serie:
 
-El modelo SARIMAX se basa en varias suposiciones clave. La más importante es que la serie de datos sea \textit{estacionaria}. Esto significa que sus propiedades estadísticas, como la media y la varianza, deben ser constantes a lo largo del tiempo. Además, se asume que los residuos del modelo son ruido blanco, es decir, que son independientes e idénticamente distribuidos, con media cero y varianza constante. También se considera que no hay autocorrelación en los residuos.\\
-
-El modelo SARIMAX viene caracterizado por los parámetros $(p,d,q)x(P,D,Q,s)$ donde:
 \begin{itemize}
-    \item[$p$]: Orden del componente autorregresivo (AR) no estacional. Indica el número de rezagos de la variable endógena que se incluyen en el modelo.
-    \item[$d$]: Orden de diferenciación no estacional. Representa la cantidad de veces que se deben diferenciar los datos para hacer la serie estacionaria.
-    \item[$q$]: Orden del componente de media móvil (MA) no estacional. Indica el número de rezagos del error del pronóstico que se incluyen en el modelo.
-    \item[$P$]: Orden del componente autorregresivo (AR) estacional.
-    \item[$D$]: Orden de diferenciación estacional.
-    \item[$Q$]: Orden del componente de media móvil (MA) estacional.
-    \item[$s$]: Período de estacionalidad, en este caso vemos que $s=24$ de manera natural al tratarse de precios horarios.
+    \item \textbf{Tendencia (I - Integrado):} Se logra a través de la diferenciación para hacer que la serie sea estacionaria.
+    \item \textbf{Estacionalidad (S - Seasonal):} Captura patrones que se repiten en intervalos fijos (por ejemplo, diarios o semanales).
+    \item \textbf{Variables (X):} Permite incluir predictores externos, como la demanda o la generación de energía.
 \end{itemize}
 
-Para determinar los órdenes de los parámetros del modelo, se analizan las funciones de autocorrelación (ACF) y autocorrelación parcial (PACF). La ACF mide la correlación de la serie consigo misma en diferentes rezagos, mientras que la PACF mide esta misma correlación eliminando la influencia de los rezagos intermedios.\\
+El proceso consiste en:
+\begin{itemize}
+    \item \textbf{Identificación:} El modelo SARIMAX viene caracterizado por los parámetros $(p,d,q)x(P,D,Q,s)$ donde:
+    \begin{itemize}
+        \item[$p:$] Orden del componente autorregresivo (AR) no estacional. Indica el número de rezagos de la variable endógena que se incluyen en el modelo.
+        \item[$d:$] Orden de diferenciación no estacional. Representa la cantidad de veces que se deben diferenciar los datos para hacer la serie estacionaria.
+        \item[$q:$] Orden del componente de media móvil (MA) no estacional. Indica el número de rezagos del error del pronóstico que se incluyen en el modelo.
+        \item[$P:$] Orden del componente autorregresivo (AR) estacional.
+        \item[$D:$] Orden de diferenciación estacional.
+        \item[$Q:$] Orden del componente de media móvil (MA) estacional.
+        \item[$s:$] Período de estacionalidad, en este caso vemos que $s=24$ de manera natural al tratarse de precios horarios.
+    \end{itemize}
+    
+    \item \textbf{Estimación:} Una vez definidos los órdenes, se ajusta el modelo al conjunto de datos de entrenamiento. El modelo aprende los coeficientes que ponderan la importancia de los valores pasados, los errores de pronóstico pasados y las variables exógenas.
+\end{itemize}
+
+La predicción con SARIMAX es un proceso iterativo o recursivo:
+\begin{itemize}
+    \item \textbf{Entrenamiento:} Al igual que con otros modelos, se reentrena un modelo SARIMAX final con su orden óptimo utilizando todos los datos históricos disponibles para maximizar la información aprendida.
+    
+    \item \textbf{Predicción:} Para predecir el horizonte futuro (ej. las próximas 24 horas), el modelo:
+    \begin{itemize}
+        \item Predice el primer paso (t+1) utilizando todos los datos históricos reales.
+        \item Para predecir el segundo paso (t+2), utiliza los datos históricos y la predicción que acaba de hacer para t+1 como si fuera un dato real.
+    \end{itemize}
+\end{itemize}
+
+Este proceso se repite para cada punto en el horizonte de predicción.
+
+En nuestro caso, para determinar los órdenes de los parámetros del modelo, se analizan las funciones de autocorrelación (ACF) y autocorrelación parcial (PACF). La ACF mide la correlación de la serie consigo misma en diferentes rezagos, mientras que la PACF mide esta misma correlación eliminando la influencia de los rezagos intermedios.\\
 
 En las siguientes imágenes podemos ver los gráficos de ACF y PACF para la serie de precios de la luz, lo que nos permite identificar los patrones de estacionalidad y los órdenes de los modelos.
 
@@ -115,7 +137,25 @@ Estos tres modelos serán evaluados y comparados utilizando métricas como el MA
 %
 %
 %
-Este modelo, basado en árboles de decisión, también relativamente sencillo de implementar aunque, como es habitual en este tipo de modelos, menor interpretabilidad de lo que ocurre dentro del algoritmo. Su robustez viene por la capacidad de aprender patrones complejos pero mejorado mediante técnicas de aproximación en las funciones de pérdida y regularización. Esta segunda suele ser la primera que se mira cuando se trata de modelos predictivos puesto que habla de la precisión del mismo, sin embargo, XGBoost permite la regularización de manera que evitemos el \textit{overfitting} (sobreajuste), es decir, que durante la etapa de entrenamiento el modelo adopte patrones demasiado complejos, propios del conjunto introducido de manera que pierda generalidad y por ello no sea capaz de realizar buenas predicciones.
+Este modelo, basado en árboles de decisión, también es relativamente sencillo de implementar aunque, como es habitual en este tipo de modelos, presenta menor interpretabilidad respecto a lo que ocurre dentro del algoritmo. Su robustez radica en la capacidad de aprender patrones complejos mediante un enfoque de ensamblado (\textit{ensemble}) y mejora por aproximación secuencial de errores. Además, se ve reforzado por técnicas de regularización y control del \textit{overfitting}, lo que permite obtener modelos generalizables y eficientes en predicción.Entre las características más destacadas de XGBoost:
+
+\begin{itemize}
+    \item \textbf{Regularización integrada:} A diferencia de otros modelos basados en árboles, XGBoost incluye regularización $L_1$ y $L_2$ como parte de la función de coste, permitiendo controlar la complejidad del modelo y reducir el riesgo de \textit{overfitting}
+    \item \textbf{Manejo de valores nulos:} Tiene un tratamiento nativo para valores faltantes, aprendiendo automáticamente la mejor dirección en los nodos de decisión.
+    \item \textbf{Velocidad y eficiencia:} Permite la construcción de árboles de manera paralela. Además, utiliza una aproximación de segundo orden (Taylor) sobre la función de pérdida, incorporando tanto el gradiente como el hessiano. Esto no solo acelera la convergencia del modelo, sino que también permite trabajar con funciones de pérdida más generales, si bien lo más común es trabajar con el error cuadrático medio.
+    \item \textbf{Importancia de variables:} Aunque la interpretabilidad del modelo global es limitada, permite extraer métricas de importancia relativa de cada predictor.
+\end{itemize}
+
+El entrenamiento se realiza mediante un enfoque de \textit{boosting}:
+
+\begin{itemize}
+    \item \textbf{Inicialización:} Se parte de una predicción base (por ejemplo, la media de la variable a predecir).
+    \item \textbf{Aprendizaje secuencial:} Cada árbol posterior intenta corregir los errores residuales cometidos por el conjunto acumulado hasta el momento.
+    \item \textbf{Optimización de la función de pérdida:} Se utiliza una aproximación de segundo orden (gradiente y hessiano) para mejorar la precisión de la optimización.
+    \item \textbf{Regularización:} Durante el proceso se penaliza la complejidad del modelo (profundidad de los árboles, número de nodos) para evitar \textit{overfitting}.
+\end{itemize}
+
+La predicción con XGBoost se realiza paso a paso, como la SARIMAX.
 %
 %
 %
@@ -123,11 +163,43 @@ Este modelo, basado en árboles de decisión, también relativamente sencillo de
 %
 %
 %
-Este modelo es uno de los más avanzados, estado del arte en diversas áreas. Su funcionamiento es más complejo aunque puede entenderse la estructura (ver pre-print original \cite{TFT}). Por dar una breve explicación
-%
-%
-%
+El Temporal Fusion Transformer (TFT) es una arquitectura de deep learning diseñada específicamente para el forecasting de series temporales multi-horizonte. Combina mecanismos de atención (propios de los Transformers) con redes neuronales recurrentes y capas de gating. Sus características clave son:
 
+\begin{itemize}
+    \item \textbf{Manejo de Múltiples Tipos de Variables:} Integra de forma nativa variables estáticas, entradas conocidas en el futuro y variables observadas en el pasado (ej. precio, demanda).
+    \item \textbf{Aprendizaje de Patrones a Múltiples Escalas:} Puede identificar patrones temporales tanto a corto como a largo plazo simultáneamente.
+\end{itemize}
+
+El entrenamiento consiste en:
+\begin{itemize}
+    \item \textbf{Preparación de los Datos:} Los datos se estructuran en "ventanas" de entrada de una longitud fija para predecir una "ventana" de salida (ej. las próximas 24 horas).
+    \item \textbf{Ajuste del Modelo:} Se entrena una única red neuronal que aprende las interacciones entre todas las variables a lo largo del tiempo.
+\end{itemize}
+
+La predicción con TFT se realiza en un solo paso:
+\begin{itemize}
+    \item \textbf{Reentrenamiento:} Se ajusta el modelo final con todos los datos históricos disponibles.
+    \item \textbf{Predicción Multi-Horizonte Directa:} Para generar la predicción, se le proporciona al modelo la última ventana de datos históricos disponibles. En una única pasada hacia adelante (forward pass), el modelo genera directamente todas las predicciones para el horizonte completo.
+\end{itemize}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figuras/TFTarquitectura.png}
+    \caption{Arquitectura del TFT \cite{TFT}}
+    \label{fig:placeholder}
+\end{figure}
+
+
+Respecto a la decisión de hiperparámetros de nuestro modelo TFT es más complicada. Este tipo de modelos son más exigentes en el formato de entrada de los datos y más sensible a las configuraciones, si bien lo compensa con un gran rendimiento. Por ello no me adentraré mucho en ello:
+\begin{itemize}
+    \item \textbf{n estimators}
+    \item \textbf{max depth}
+    \item \textbf{learning rate}
+\end{itemize}
+%
+%
+%
 \subsubsection{Resultados}
 %
 %
