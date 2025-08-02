@@ -3,7 +3,7 @@
 \usepackage{hyperref}
 \usepackage{geometry}
 \usepackage{eurosym}
-\usepackage[english, spanish ]{babel}
+\usepackage[english, spanish]{babel}
 \usepackage{csquotes}
 \usepackage{fontspec}
 \setmainfont{Libertinus Serif}
@@ -32,7 +32,7 @@
 % Configuración de listings
 \lstset{
   language=Python,
-  basicstyle=\ttfamily\small\color{lightgraytext},
+  basicstyle=\ttfamily\scriptsize\color{lightgraytext},
   keywordstyle=\color{keywordblue}\bfseries,
   commentstyle=\color{commentgreen}\itshape,
   stringstyle=\color{stringyellow},
@@ -66,7 +66,6 @@
 \usepackage[mathscr]{euscript}
 \usepackage{mathrsfs}
 \usepackage{textcomp}
-
 \usepackage[
     sorting=none,
     style=ieee,
@@ -81,32 +80,29 @@
 \usepackage{url}
 \usepackage{fancyhdr}
 
+\setlength{\parskip}{1em}
 \geometry{
-  top=2.75cm,
+  top=1.75cm,
   bottom=2.5cm,
   left=2.0cm,
   right=2.0cm,
-  headsep = 1.2cm
+  headsep = 1cm
 }
 
-
+\setlength{\headheight}{42pt}
 \pagestyle{fancy}
 \fancyhf{} 
 
 \fancyhead[L]{
-  \includegraphics[height=1.2cm]{figuras/logo_UC.jpg}
+  \includegraphics[height=1.3cm]{figuras/logo_UC.jpg}
 }
 
 \fancyhead[R]{
-  \includegraphics[height=1.2cm]{figuras/logo_Evenbytes.png}
+  \includegraphics[height=1.3cm]{figuras/logo_Evenbytes.png}
 }
 
 \fancyfoot[C]{\thepage}
 
-
-\renewcommand{\headrulewidth}{0.4pt}
-\renewcommand{\footrulewidth}{0.2pt}
-\newcommand{\C}{^{\circ} \text{C}}
 % Mostramos y enumeramos hasta subsubsection
 \setcounter{tocdepth}{3}
 \setcounter{secnumdepth}{3}
