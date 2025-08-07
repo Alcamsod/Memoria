@@ -51,27 +51,27 @@ Este proceso consiste en la observación de los datos, su representación en dif
 \centering
 \begin{subfigure}[b]{0.35\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figuras/histoico.png}
+\includegraphics[width=\textwidth]{figuras/historico_precios.png}
 \caption[Precio de la luz respecto del tiempo]{.}
 \label{Precio vs tiempo}
 \end{subfigure}
 \begin{subfigure}[b]{0.35\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figuras/histoico.png}
+\includegraphics[width=\textwidth]{figuras/matriz_correlacion.png}
 \caption[Matriz de correlación]{.}
 \label{Matriz de correlacion}
 \end{subfigure}
 \begin{subfigure}[b]{0.35\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figuras/histoico.png}
+\includegraphics[width=\textwidth]{figuras/boxplots_precios.png}
 \caption[Boxplot diario]{.}
 \label{Booxplotdiario}
 \end{subfigure}
 \begin{subfigure}[b]{0.35\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figuras/histoico.png}
+\includegraphics[width=\textwidth]{figuras/boxplots_precios.png}
 \caption[Boxplot anual]{.}
-\label{Boxplot}
+\label{Boxplotanual}
 \end{subfigure}
 \caption{Figuras del análisis exploratorio.}
 \label{Análisis exploratorio}
@@ -194,45 +194,54 @@ Para la elección de los hiperparámetros del modelo, conocida como \textit{hype
 
 A continuación, se muestra un fragmento de código que implementa la validación cruzada temporal y la búsqueda de hiperparámetros con \textit{GridSearchCV}.
 
-\textbf{CAMBIAR EL CODIGO POR EL CORRECTO MUY MUY IMPORTANTE AUNQUE ESTE ESTA BIEN COMO TAL POR DEJARLO COMO LO HE USADO EN EL TRABAJO}
 \begin{lstlisting}[caption={Búsqueda óptima de hiperparámetros y validación cruzada en el modelo XGBoost }, label={TSSyGSXGBoost}]
-# Primero, definimos la búsqueda de hiperparámetros con validación cruzada temporal.
 param_grid = {
     'n_estimators': [300, 325, 350, 375, 400, 425, 450],
     'learning_rate': [0.02, 0.03, 0.04, 0.05, 0.06, 0.07],
     'max_depth': [2, 3, 4, 5]
 }
+
 tscv = TimeSeriesSplit(n_splits=5) 
+
 xgb = XGBRegressor(random_state=42, reg_alpha=5, reg_lambda=1)
+
 grid_search = GridSearchCV(
     estimator=xgb,
     param_grid=param_grid,
     scoring='neg_mean_absolute_error',
     cv=tscv,
     n_jobs=-1,
-    verbose=1
+    verbose=2
 )
+print("------------------------------------")
 print("Iniciando búsqueda de hiperparámetros con GridSearchCV...")
+print("------------------------------------")
 grid_search.fit(X_train, Y_train)
+print("<------------ VALORES DE LOS ERRORES ------------>")
 print(f"Mejores hiperparámetros encontrados: {grid_search.best_params_}")
-print(f"Mejor MAE (validación cruzada): {-grid_search.best_score_:.2f}")
-# El mejor modelo ya está entrenado en el conjunto de entrenamiento completo (X_train, Y_train)
-# debido a que refit=True por defecto en GridSearchCV.
-best_model = grid_search.best_estimator_
-# Predecimos en el conjunto de test
-Y_test_pred = best_model.predict(X_test)
-# Evaluamos el rendimiento en el conjunto de test
-print("Evaluación en el conjunto de test (usando el mejor modelo):")
-print(f"MAE: {mean_absolute_error(Y_test, Y_test_pred):.4f}")
-print(f"RMSE: {root_mean_squared_error(Y_test, Y_test_pred):.4f}")
-print(f"R2: {r2_score(Y_test, Y_test_pred):.4f}")
+print(f"Mejor MAE con validación cruzada: {-grid_search.best_score_:.2f}")
+print("------------------------------------")
 \end{lstlisting}
+print(f"R²: {r2_score(Y_test, Y_test_pred):.4f}")
 En el código anterior, los hiperparámetros que se optimizan son \textit{n$\_$estimators}, \textit{learning$\_$rate} y \textit{max$\_$depth}.
 \begin{itemize}
     \item \textbf{n$\_$estimators}: Representa el número de árboles de decisión que el modelo construye de forma secuencial. Un mayor número de estimadores puede mejorar la capacidad predictiva del modelo, pero también aumenta el riesgo de \textit{overfitting} y el tiempo de cálculo.
     \item \textbf{learning$\_$rate}: Es un factor de ponderación que controla el peso que tiene cada nuevo árbol de decisión en la predicción final. Un valor más bajo hace que el modelo aprenda de forma más gradual, reduciendo el riesgo de \textit{overfitting}.
     \item \textbf{max$\_$depth}: Limita la profundidad máxima de cada árbol de decisión. Es un hiperparámetro crucial para controlar la complejidad del modelo. Una profundidad más pequeña ayuda a prevenir el \textit{overfitting} al simplificar los árboles.
 \end{itemize}
+En las siguientes gráficas mostramos los resultados obtenidos en uno de los entrenamientos junto a sus errores:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figuras/XGBoost_prediccion.png}
+    \caption[Prediccion con XGBoost]{Se observa una predicción realizada para el mes de junio de 2025 con un entrenamiento del histórico de datos completos.}
+    \label{dobledifereniado}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figuras/XGBoost_errores.png}
+    \caption[Errores en prediccion con XGBoost]{Errores del modelo XGBoost, en el que destacan los QQ-plots y el histograma para caracterizar el comportamiento de los mismos. Puede verse en ellos que se distribuyen de forma simétrica, sin colas pesadas aunque no completamente normal.}
+    \label{dobledifereniado}
+\end{figure}
 %
 %
 %

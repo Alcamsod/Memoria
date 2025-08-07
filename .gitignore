@@ -23,4 +23,4 @@ env_xgboost
 env_tft
 .venv
 # Carpetas
-/modelos/archivos/
+Codigos/modelos/archivos/
