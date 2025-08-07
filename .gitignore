@@ -1,3 +1,4 @@
+# Archivos auxiliares de LaTeX
 *.aux
 *.bbl
 *.bcf
@@ -9,3 +10,17 @@
 *.toc
 *.run.xml
 *.synctex.gz
+# Archivos de las predicciones
+# KEY
+sandbox_estudiantes_key.json
+.env
+# Archivos auxiliares de pruebas
+cambio-formato-histórico
+prueba_main
+# Archivos del entorno
+env_sarimax
+env_xgboost
+env_tft
+.venv
+# Carpetas
+/modelos/archivos/
