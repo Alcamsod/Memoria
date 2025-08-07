@@ -129,19 +129,19 @@ En las siguientes imágenes podemos ver los gráficos de ACF y PACF para la seri
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{figuras/ACF_PACF.png}
+    \includegraphics[width=0.7\linewidth]{figuras/boxplots_precios.png}
     \caption[ACF y PACF para d=D=0]{ACF y PACF de la serie de precios de la luz sin diferenciar. Se observa una clara estacionalidad y una autocorrelación que decae lentamente, lo que sugiere la necesidad de diferenciación.}
     \label{fig:ACF_sin_diferenciar}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{figuras/ACF_PACF.png}
+    \includegraphics[width=0.7\linewidth]{figuras/boxplots_precios.png}
     \caption[ACF y PACF para D=1, s=24]{ACF y PACF de la serie de precios con diferenciación estacional. Aunque la estacionalidad ha sido eliminada, la autocorrelación no estacional aún persiste.}
     \label{diferenciado}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{figuras/ACF_PACF.png}
+    \includegraphics[width=0.7\linewidth]{figuras/boxplots_precios.png}
     \caption[ACF y PACF para d=D=1, s=24]{ACF y PACF de la serie con diferenciación doble. Ahora la serie es estacionaria y los rezagos significativos nos indican los posibles órdenes $p, q, P, Q$.}
     \label{dobledifereniado}
 \end{figure}
@@ -221,8 +221,8 @@ print("<------------ VALORES DE LOS ERRORES ------------>")
 print(f"Mejores hiperparámetros encontrados: {grid_search.best_params_}")
 print(f"Mejor MAE con validación cruzada: {-grid_search.best_score_:.2f}")
 print("------------------------------------")
-\end{lstlisting}
 print(f"R²: {r2_score(Y_test, Y_test_pred):.4f}")
+\end{lstlisting}
 En el código anterior, los hiperparámetros que se optimizan son \textit{n$\_$estimators}, \textit{learning$\_$rate} y \textit{max$\_$depth}.
 \begin{itemize}
     \item \textbf{n$\_$estimators}: Representa el número de árboles de decisión que el modelo construye de forma secuencial. Un mayor número de estimadores puede mejorar la capacidad predictiva del modelo, pero también aumenta el riesgo de \textit{overfitting} y el tiempo de cálculo.
@@ -234,13 +234,13 @@ En las siguientes gráficas mostramos los resultados obtenidos en uno de los ent
     \centering
     \includegraphics[width=0.7\linewidth]{figuras/XGBoost_prediccion.png}
     \caption[Prediccion con XGBoost]{Se observa una predicción realizada para el mes de junio de 2025 con un entrenamiento del histórico de datos completos.}
-    \label{dobledifereniado}
+    \label{XGBoost_prediccion}
 \end{figure}
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{figuras/XGBoost_errores.png}
     \caption[Errores en prediccion con XGBoost]{Errores del modelo XGBoost, en el que destacan los QQ-plots y el histograma para caracterizar el comportamiento de los mismos. Puede verse en ellos que se distribuyen de forma simétrica, sin colas pesadas aunque no completamente normal.}
-    \label{dobledifereniado}
+    \label{XGBoost_errores}
 \end{figure}
 %
 %
@@ -402,19 +402,19 @@ Con el objetivo de no saturar con imágenes de modelos con un peor ajuste, a con
 \centering
 \begin{subfigure}[b]{0.3\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figuras/histoico.png}
+\includegraphics[width=\textwidth]{figuras/historico_precios.png}
 \caption[Predicción mediante SARIMAX]{.}
 \label{PrediccionSarimax}
 \end{subfigure}
 \begin{subfigure}[b]{0.3\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figuras/histoico.png}
+\includegraphics[width=\textwidth]{figuras/historico_precios.png}
 \caption[Predicción mediante XGBoost]{.}
 \label{PrediccionXGBoost}
 \end{subfigure}
 \begin{subfigure}[b]{0.3\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figuras/histoico.png}
+\includegraphics[width=\textwidth]{figuras/historico_precios.png}
 \caption[Predicción mediante TFT]{.}
 \label{PrediccionTFT}
 \end{subfigure}
