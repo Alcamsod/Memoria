@@ -9,13 +9,14 @@ Este trabajo trataba de la optimización del gasto energético de una empresa qu
 %
 %
 %
-Para llevar a cabo un modelo predictivo de de los precios de la luz para una empresa hemos de realizar una serie de pasos. En primer lugar, como es evidente, debemos conocer y entender qué es lo que queremos predecir, bajo qué condiciones y qué variables afectan al precio de la luz, tanto naturales, como puede ser la demanda, la generación de ciertos tipos de energía, como aquellas relacionadas con la legislación vigente. Posteriormente debemos decidir cómo se extraeran los datos necesarios. Puesto que estamos hablando de un proyecto real, la empresa espera un proceso automatizado por lo que se debe tener en cuenta una extracción periódica de datos.
+Para llevar a cabo un modelo predictivo de los precios de la luz para una empresa hemos de realizar una serie de pasos. En primer lugar, como es evidente, debemos conocer y entender qué es lo que queremos predecir, bajo qué condiciones y qué variables afectan al precio de la luz, tanto naturales, como puede ser la demanda, la generación de ciertos tipos de energía, como aquellas relacionadas con la legislación vigente. Posteriormente debemos decidir cómo se extraeran los datos necesarios. Puesto que estamos hablando de un proyecto real, la empresa espera un proceso automatizado por lo que se debe tener en cuenta una extracción periódica de datos.
 
 Una vez planteado el contexto en el que vamos a movernos, debemos decidir qué modelos probar, conociendo sus ventajas y desventajas. Mi elección, basada en búsquedas de desarrollos similares, fue optar por tres modelos:
 \begin{description}
-    \item[SARIMAX] Modelo estadístico clásico
-    \item[XGBoost] Modelo de \textit{machine learning}
-    \item[TFT] Modelo de \textit{deep learning}
+    \item[SARIMAX:] Modelo estadístico clásico.
+    \item[Random Forest:] Modelo de \textit{machine learning} basado en árboles de decisión.
+    \item[XGBoost:] Modelo de \textit{machine learning} basado en árboles de decisión, más avanzado que el anterior.
+    \item[TFT:] Modelo de \textit{deep learning}, específico para series temporales.
 \end{description}
 
 Por último, por requisitos del proyecto, la predicción se realizaba a un mes vista, lo cual como es lógico, no es óptimo. Sin embargo, esto era algo fijo por lo que los resultados esperados son mejorables, recortando el horizonte de predicción y reentrenado los modelos con mayor asiduidad.
@@ -28,7 +29,7 @@ Por último, por requisitos del proyecto, la predicción se realizaba a un mes v
 %
 Dado que la empresa es una electrointensiva no se rige por el régimen general del pequeño consumidor (PVPC). Para la toma de datos de la variable objetivo, el precio de la luz, se consultó el precio del mercado SPOT diario, que es el que regula la venta de luz al por mayor.
 
-Para calcular exactamente, dentro de lo que podemos entender como \textit{exacto} en un modelo de predicción, el precio de la luz debemos tener en cuenta tanto el precio de venta como los peajes. Estos últimos son valor añadido a la factura de la luz que depende del tipo de empresa y de la hora de consumo. De cualquier forma, en lo que a nuestro modelo se refiere, únicamente nos interesa el preio del mercado SPOT diario, que viene dado de manera horaria.
+Para calcular exactamente, dentro de lo que podemos entender como \textit{exacto} en un modelo de predicción, el precio de la luz debemos tener en cuenta tanto el precio de venta como los peajes. Estos últimos son valor añadido a la factura de la luz que depende del tipo de empresa y de la hora de consumo. De cualquier forma, en lo que a nuestro modelo se refiere, únicamente nos interesa el precio del mercado SPOT diario, que viene dado de manera horaria.
 %
 %
 %
@@ -46,39 +47,40 @@ En lo relativo a la preparación de los datos, salvando las diferencias en funci
 %
 %
 %
-Este proceso consiste en la observación de los datos, su representación en diferentes formas con el fin de decidir características del modelo. El estudio consistió en graficar respecto del tiempo el histórico de datos, implementar una matriz de correlación para observar las relaciones entre las distintas variables y boxplot para estudiar el comportamiento de nuestra serie. En las siguientes figuras podemos visualizarlo:
+Este proceso consiste en la observación de los datos, su representación en diferentes formas con el fin de decidir características del modelo. El estudio consistió en graficar respecto del tiempo el histórico de datos, implementar una matriz de correlación para observar las relaciones entre las distintas variables y boxplot para estudiar el comportamiento de nuestra serie.
+
+A partir de los datos obtenidos con las gráficas, como se puede observar en la figura \Cref{Precio vs tiempo}, se divide el histórico de datos en un conjunto de entrenamiento, otro de test y se deja uno de validación, en este caso de un mes, al igual que la predicción que queremos realizar, para comprobar el funcionamiento \textit{real} de nuestro modelo. Este proceso es el que se ha utilizado en la SARIMAX, Random Forest y el XGBoost.
+
+Observando la matriz de correlación (figura \Cref{Matriz de correlacion}) puede verse también que la variable más significativa es la generación solar. En último lugar, de los boxplot podemos observar como los meses de abril y mayo son los de menor precio mientras que en otros, como febrero, el precio aumenta significativamente. Del mismo modo, en el ámbito diario podemos observar como las denominadas \textit{horas valle} se corresponden con el tramo de 10-15 y las \textit{horas pico} con 18-20.
 \begin{figure}[H]
 \centering
-\begin{subfigure}[b]{0.35\textwidth}
+\begin{subfigure}[b]{0.7\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figuras/historico_precios.png}
-\caption[Precio de la luz respecto del tiempo]{.}
+\caption[Precio de la luz respecto del tiempo]{Precio de la luz respecto del tiempo, en azul se ve el conjunto de entrenamiento (\textit{train test}), en verde el conjunto de test (\textit{test test}) y en amarillo el conjunto de validación (\textit{validation test}).}
 \label{Precio vs tiempo}
 \end{subfigure}
-\begin{subfigure}[b]{0.35\textwidth}
+\begin{subfigure}[b]{0.6\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figuras/matriz_correlacion.png}
-\caption[Matriz de correlación]{.}
+\caption[Matriz de correlación]{Matriz de correlación}
 \label{Matriz de correlacion}
 \end{subfigure}
-\begin{subfigure}[b]{0.35\textwidth}
+\begin{subfigure}[b]{0.4\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figuras/boxplots_precios.png}
-\caption[Boxplot diario]{.}
+\includegraphics[width=\textwidth]{figuras/boxplot_diario.png}
+\caption[Boxplot diario]{Boxplot diario}
 \label{Booxplotdiario}
 \end{subfigure}
-\begin{subfigure}[b]{0.35\textwidth}
+\begin{subfigure}[b]{0.4\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figuras/boxplots_precios.png}
-\caption[Boxplot anual]{.}
+\includegraphics[width=\textwidth]{figuras/boxplot_anual.png}
+\caption[Boxplot anual]{Boxplot anual}
 \label{Boxplotanual}
 \end{subfigure}
 \caption{Figuras del análisis exploratorio.}
 \label{Análisis exploratorio}
 \end{figure}
-A partir de estos datos, como se puede observar en la figura \Cref{Precio vs tiempo}, se divide el histórico de datos en un conjunto de entrenamiento, otro de test y se deja uno de validación, en este caso de un mes, al igual que la predicción que queremos realizar, para comprobar el funcionamiento \textit{real} de nuestro modelo \footnote{Este proceso se utilizó tanto en la SARIMAX como en el XGBoost, como se explicará más adelante, el TFT no requiere un \textit{train} y \textit{test} setm, le indicas por configuración el número de pasos que tomas del histórico y el número de ellos para la predicción.}
-
-Observando la matriz de correlación puede verse también que la variable más significativa es BLA, si bien es cierto que todas se encuentran en un mismo rango de relación. En último lugar, de los boxplot podemos observar como los meses de abril y mayo son los de menor precio mientras que los de noviembre y diciembre el precio aumenta significativamente. Del mismo modo, en el ámbito diario podemos observar como las denominadas \textit{horas valle} se corresponden con el tramo de 8-10 y las \textit{horas pico} con 13-17.
 %
 %
 %
@@ -163,6 +165,40 @@ Estos tres modelos serán evaluados y comparados utilizando métricas como el MA
 %
 %
 %
+\subsubsection{Random Forest}
+%
+%
+%
+Este modelo, también basado en árboles de decisión, destaca por su sencillez de implementación y su gran versatilidad para distintos tipos de problemas, aunque, como ocurre habitualmente en modelos de este tipo, presenta una menor interpretabilidad sobre el funcionamiento interno. Su fortaleza radica en el uso de un enfoque de ensamblado (\textit{ensemble}) mediante \textit{bagging}, que combina múltiples árboles de decisión entrenados de manera independiente a partir de boostrap y predictores. Este procedimiento permite reducir la varianza del modelo y mejorar la capacidad de generalización, incluso sin requerir un ajuste tan fino como otros métodos más complejos. Entre las características más relevantes de Random Forest:
+
+\begin{itemize}
+    \item \textbf{Robustez frente al \textit{overfitting}:} El uso de múltiples árboles entrenados con subconjuntos aleatorios ayuda a evitar que el modelo memorice el conjunto de entrenamiento, reduciendo el riesgo de sobreajuste.
+    \item \textbf{Capacidad de manejo de datos ruidosos:} El promedio (en regresión) o el voto mayoritario (en clasificación) suaviza el impacto de observaciones atípicas.
+    \item \textbf{Manejo de variables de distinta naturaleza:} Puede trabajar tanto con variables numéricas como categóricas sin necesidad de una normalización previa.
+    \item \textbf{Importancia de variables:} Aunque la interpretación global es limitada, proporciona métricas de importancia relativa para cada predictor, lo que facilita la identificación de los más influyentes.
+\end{itemize}
+
+En nuestro caso, la implementación con la librería \textit{scikit-learn} permite optimizar el modelo mediante herramientas como \textit{TimeSeriesSplit} y \textit{GridSearchCV}, especialmente útiles en problemas de series temporales. De nuevo, nos enfrentamos a dos retos principales: la selección de hiperparámetros y la evaluación de errores.
+
+Para la evaluación, \textit{TimeSeriesSplit} divide el conjunto de entrenamiento en particiones cronológicas, evitando la ruptura de la secuencia temporal y permitiendo calcular métricas como MAE, RMSE o R$^2$ de forma más realista.
+
+En cuanto a la búsqueda de los hiperparámetros óptimos (\textit{hyperparameter tuning}), \textit{GridSearchCV} prueba combinaciones dentro de los rangos definidos y nos devuelve la configuración con mejor rendimiento según una métrica objetivo, como el RMSE. En las siguientes gráficas mostramos los resultados obtenidos en uno de los entrenamientos junto a sus errores:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figuras/RandomForest_prediccion.png}
+    \caption[Prediccion con Random Forest]{Predicción realizada para el mes de junio de 2025 con un entrenamiento sobre el histórico completo de datos.}
+    \label{RandomForest_prediccion}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{figuras/RandomForest_errorespng.png}
+    \caption[Errores en prediccion con Random Forest]{Errores del modelo Random Forest, donde los QQ-plots y el histograma muestran una distribución simétrica, sin colas pesadas pero no completamente normal.}
+    \label{RandomForest_errores}
+\end{figure}
+%
+%
+%
 \subsubsection{XGBoost}
 %
 %
@@ -170,7 +206,7 @@ Estos tres modelos serán evaluados y comparados utilizando métricas como el MA
 Este modelo, basado en árboles de decisión, también es relativamente sencillo de implementar aunque, como es habitual en este tipo de modelos, presenta menor interpretabilidad respecto a lo que ocurre dentro del algoritmo. Su robustez radica en la capacidad de aprender patrones complejos mediante un enfoque de ensamblado (\textit{ensemble}) y mejora por aproximación secuencial de errores. Además, se ve reforzado por técnicas de regularización y control del \textit{overfitting}, lo que permite obtener modelos generalizables y eficientes en predicción.Entre las características más destacadas de XGBoost:
 
 \begin{itemize}
-    \item \textbf{Regularización integrada:} A diferencia de otros modelos basados en árboles, XGBoost incluye regularización $L_1$ y $L_2$ como parte de la función de coste, permitiendo controlar la complejidad del modelo y reducir el riesgo de \textit{overfitting}
+    \item \textbf{Regularización integrada:} A diferencia de otros modelos basados en árboles, XGBoost incluye regularización $L_1$ y $L_2$ como parte de la función de coste, permitiendo controlar la complejidad del modelo y reducir el riesgo de \textit{overfitting}.
     \item \textbf{Manejo de valores nulos:} Tiene un tratamiento nativo para valores faltantes, aprendiendo automáticamente la mejor dirección en los nodos de decisión.
     \item \textbf{Velocidad y eficiencia:} Permite la construcción de árboles de manera paralela. Además, utiliza una aproximación de segundo orden (Taylor) sobre la función de pérdida, incorporando tanto el gradiente como el hessiano. Esto no solo acelera la convergencia del modelo, sino que también permite trabajar con funciones de pérdida más generales, si bien lo más común es trabajar con el error cuadrático medio.
     \item \textbf{Importancia de variables:} Aunque la interpretabilidad del modelo global es limitada, permite extraer métricas de importancia relativa de cada predictor.
@@ -303,8 +339,8 @@ Respecto a la decisión de hiperparámetros de nuestro modelo TFT es más compli
     \item \textbf{dropout}: Para este tipo de modelos, un valor entre 0.1-0.3 suele ser lo estándard. Este hiperparámetro es fundamental para la regularización, previniendo el \textit{overfitting}. Consiste en desactivar aleatoriamente un porcentaje de neuronas durante el entrenamiento.
 \end{itemize}
 
-En nuestro caso particular, muestro a continuación parte del código utilizado en el que se ve cómo se refina la configuración.
-\begin{lstlisting}[caption={Código de implementación del modelo TFT}, label = {TFT_model_implementacion}]
+En nuestro caso particular, muestro a continuación parte del código utilizado en el que se ve cómo se refina la configuración:
+\begin{lstlisting}[caption={Código de implementación del modelo TFT.}, label = {TFT_model_implementacion}]
 # Entrenamos el modelo
 # Configuración de la forma de entrenamiento
 early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=10, verbose=False, mode="min")
@@ -377,42 +413,40 @@ La búsqueda se realiza utilizando validación sobre los datos de evaluación de
 %
 %
 %
-Para la elección de lo que podemos entender como \textit{mejor modelo} se han comparado tres métricas: MAE, RMSE y R$^2$. Una vez entreneados los modelos sobre el conjunto de entrenamiento se realiza la prueba sobre el \textit{test set} y posteriormente validamos los resultados sobre otro conjunto, del que conocemos ya los valores reales, es decir, entrenamos nuestro modelo para conocer como predice sobre los datos que le hemos introducido y después probamos sobre un conjunto, a priori de variables desconocidas, para saber si hemos conseguido generalizar bien el comportamiento de de la serie temporal. En la tabla siguiente se muestran los valores mencionados:
+Para la elección de lo que podemos entender como \textit{mejor modelo} se han comparado tres métricas: MAE, RMSE y R$^2$. Una vez entreneados los modelos sobre el conjunto de entrenamiento se realiza la prueba sobre el \textit{test set} y posteriormente validamos los resultados sobre otro conjunto, del que conocemos ya los valores reales, es decir, entrenamos nuestro modelo para conocer como predice sobre los datos que le hemos introducido y después probamos sobre un conjunto, a priori de variables desconocidas, comprobando así si hemos conseguido generalizar bien el comportamiento de de la serie temporal. En la tabla siguiente se muestran los valores mencionados:
 \begin{table}[H]
     \centering
     \begin{tabular}{l|ccc|ccc}
         & \multicolumn{3}{c}{Test set} & \multicolumn{3}{c}{Predicción} \\
         Modelo & MAE & RMSE & R$^2$ & MAE & RMSE & R$^2$ \\
         \hline
-        SARIMAX(1,1,1)x(1,1,1,24) & 7.12 & 9.85 & 0.81 & 8.03 & 10.92 & 0.78 \\
-        SARIMAX(0,1,1)x(0,1,1,24) & 7.45 & 10.21 & 0.79 & 8.27 & 11.34 & 0.76 \\
-        SARIMAX(2,1,0)x(2,1,0,24) & 7.30 & 9.97 & 0.80 & 8.15 & 11.01 & 0.77 \\
-        XGBoost 1 & 6.85 & 9.40 & 0.83 & 7.92 & 10.45 & 0.80 \\
-        XGBoost 2 & 7.01 & 9.62 & 0.82 & 8.05 & 10.78 & 0.79 \\
-        TFT 1 & 6.72 & 9.28 & 0.84 & 7.80 & 10.32 & 0.81 \\
-        TFT 2 & 6.90 & 9.50 & 0.83 & 7.98 & 10.60 & 0.80 \\
+        SARIMAX(1,1,1)x(1,1,1,24) & 47.98 & 12.33 & 1.95 & 84.15 & 12.89 & -1.94 \\
+        SARIMAX(2,1,1)x(1,1,1,24) & 48.12 & 12.56 & 1.94 & 84.35 & 13.01 & -1.93 \\
+        SARIMAX(1,1,0)x(1,1,0,24) & 48.05 & 12.45 & 1.94 & 84.22 & 12.95 & -1.93 \\
+        XGBoost 70/30 + RM precio  & 7.30  & 11.08 & 0.96 & 7.43  & 12.23 & 0.94 \\
+        XGBoost 90/10 + RM precio  & 6.33  & 10.78 & 0.92 & 6.75  & 11.14 & 0.95 \\
+        XGBoost 90/10 + RM todo    & 7.67  & 11.60 & 0.95 & 7.74  & 12.94 & 0.94 \\
+        RF (\textbf{SIN} búsqueda) & 5.17  & 8.63  & 0.92 & 6.75  & 11.71 & 0.94 \\
+        RF (\textbf{CON} búsqueda) & 10.09 & 14.38 & 0.76 & 13.36 & 18.64 & 0.87 \\
+        TFT (\textbf{SIN} búsqueda)& 7.15  & 11.45 & 0.98 & 7.35  & 11.75 & 0.97 \\
+        TFT (\textbf{CON} búsqueda)& 7.02  & 11.30 & 0.98 & 7.20  & 11.60 & 0.97 \\
     \end{tabular}
-    \caption{Resultados por modelos para cada conjunto de datos}
+    \caption{Resultados por modelos para cada conjunto de datos.}
     \label{tab:resultados_modelos}
 \end{table}
 
+A la vista de los resultados de la tabla \ref{tab:resultados_modelos} podemos observar que el modelo \textit{SARIMAX} es el que peores métricas muestra, no consiguiendo captar de manera general en comportamiento de la serie temporal. Cabe destacar en este punto que también se trata del modelo que al que menos tiempo he invertido ya que era consciente que los otros iban a reportar mejores resultados de manera más sencilla y rápida. Por otro lado, los modelos que más destacan son el \textit{XGBoost} y el \textit{TFT}.
 
-Con el objetivo de no saturar con imágenes de modelos con un peor ajuste, a continuación mostramos una comparativa de los mejores modelos, respecto de las métricas señaladas, de cada uno de los métodos implementados:
+Este segundo, como ya se ha comentado, es un modelo más complejo. Se trata de una adaptación de los \textit{Transformers} (modelos de deep learning utilizados en el procesamiento de lenguaje natural como GPT) a series temporales. Sin embargo, en la relación tiempo o dificultad y resultados ambos se encuentram parejos. En la siguiente gráfica se muestran la predicción final para ambos modelos, con intervalos de confianza al $95\%$.
 \begin{figure}[H]
 \centering
-\begin{subfigure}[b]{0.3\textwidth}
-\centering
-\includegraphics[width=\textwidth]{figuras/historico_precios.png}
-\caption[Predicción mediante SARIMAX]{.}
-\label{PrediccionSarimax}
-\end{subfigure}
-\begin{subfigure}[b]{0.3\textwidth}
+\begin{subfigure}[b]{0.45\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figuras/historico_precios.png}
 \caption[Predicción mediante XGBoost]{.}
 \label{PrediccionXGBoost}
 \end{subfigure}
-\begin{subfigure}[b]{0.3\textwidth}
+\begin{subfigure}[b]{0.45\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figuras/historico_precios.png}
 \caption[Predicción mediante TFT]{.}
@@ -425,7 +459,7 @@ Con el objetivo de no saturar con imágenes de modelos con un peor ajuste, a con
 \subsection{Modelo físico}
 %
 %
-Con el fin de explicar con algo de detalle cómo se modela un proceso de este tipo, voy a dar una introducción teórica del proceso, para traducirlo después a términos matemáticos. Como es comprensible, no se hicieron todos estos cálculos y las suposiciones y situaciones de la práctica ni requieren tanto tecnicismo ni lo requieren. Por esto, en la parte final de esta sección explicaré brevemente qué es lo que podría resultar útil de este planteamiento de cara a su implementación para una empresa.
+Con el fin de explicar con algo de detalle cómo se modela un proceso de este tipo, voy a dar una introducción teórica del proceso, para traducirlo después a términos matemáticos. Como es comprensible, no se hicieron todos estos cálculos y las suposiciones y situaciones de la práctica no requieren tanto tecnicismo. Por esto, en la parte final de esta sección explicaré brevemente qué es lo que podría resultar útil de este planteamiento de cara a su implementación para una empresa.
 %
 %
 %
