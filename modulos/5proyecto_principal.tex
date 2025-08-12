@@ -49,9 +49,12 @@ En lo relativo a la preparación de los datos, salvando las diferencias en funci
 %
 Este proceso consiste en la observación de los datos, su representación en diferentes formas con el fin de decidir características del modelo. El estudio consistió en graficar respecto del tiempo el histórico de datos, implementar una matriz de correlación para observar las relaciones entre las distintas variables y boxplot para estudiar el comportamiento de nuestra serie.
 
-A partir de los datos obtenidos con las gráficas, como se puede observar en la figura \Cref{Precio vs tiempo}, se divide el histórico de datos en un conjunto de entrenamiento, otro de test y se deja uno de validación, en este caso de un mes, al igual que la predicción que queremos realizar, para comprobar el funcionamiento \textit{real} de nuestro modelo. Este proceso es el que se ha utilizado en la SARIMAX, Random Forest y el XGBoost.
+A partir de los datos obtenidos con las gráficas, como se puede observar en la figura \cref{Precio vs tiempo}, se divide el histórico de datos en un conjunto de entrenamiento, otro de test y se deja uno de validación, en este caso de un mes, al igual que la predicción que queremos realizar, para comprobar el funcionamiento \textit{real} de nuestro modelo. Este proceso es el que se ha utilizado en la SARIMAX, Random Forest y el XGBoost.
 
-Observando la matriz de correlación (figura \Cref{Matriz de correlacion}) puede verse también que la variable más significativa es la generación solar. En último lugar, de los boxplot podemos observar como los meses de abril y mayo son los de menor precio mientras que en otros, como febrero, el precio aumenta significativamente. Del mismo modo, en el ámbito diario podemos observar como las denominadas \textit{horas valle} se corresponden con el tramo de 10-15 y las \textit{horas pico} con 18-20.
+Observando la matriz de correlación (\cref{Matriz de correlacion}) se aprecia que la variable con mayor correlación negativa con el precio es la generación solar ($r \approx -0.38$), lo que sugiere que un aumento en la producción solar tiende a asociarse con una disminución en el precio. La demanda real presenta una correlación positiva moderada ($r \approx 0.25$) con el precio, mientras que la generación eólica muestra una relación más débil y ligeramente negativa. Las variables temporales (hora, día de la semana, mes) tienen correlaciones bajas, lo que indica que, si bien influyen en el precio, lo hacen de forma más indirecta o no lineal.
+
+En cuanto a los boxplots, puede observarse cómo en el ámbito anual (figura \cref{Boxplotanual}) los meses de abril y mayo concentran los precios más bajos, mientras que en febrero se registran picos más altos. También se aprecia que la variabilidad del precio es mayor en los meses de invierno y menor en primavera. En el análisis diario (figura \cref{Booxplotdiario}), se identifican claramente las denominadas \textit{horas valle}, comprendidas aproximadamente entre las 10:00 y las 15:00, y las \textit{horas pico}, situadas en el tramo de 18:00 a 20:00. 
+
 \begin{figure}[H]
 \centering
 \begin{subfigure}[b]{0.7\textwidth}
@@ -131,34 +134,28 @@ En las siguientes imágenes podemos ver los gráficos de ACF y PACF para la seri
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{figuras/boxplots_precios.png}
-    \caption[ACF y PACF para d=D=0]{ACF y PACF de la serie de precios de la luz sin diferenciar. Se observa una clara estacionalidad y una autocorrelación que decae lentamente, lo que sugiere la necesidad de diferenciación.}
-    \label{fig:ACF_sin_diferenciar}
+    \includegraphics[width=0.60\linewidth]{figuras/ACFPACFdD0.png}
+    \caption[ACF y PACF serie temporal original.]{Podemos observar el ACF y el PACF de la serie temporal original, sin diferenciación. En ellos podemos ver que hay una clara estacionalidad alrededor del lag 24, lo que concuerda con el pensamiento de una periodicidad diaria, cada 24 horas. Además, que no haya un decaimiento fuerte hace pensar que requiera diferenciación.}
+    \label{ACFPACFDd0}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{figuras/boxplots_precios.png}
-    \caption[ACF y PACF para D=1, s=24]{ACF y PACF de la serie de precios con diferenciación estacional. Aunque la estacionalidad ha sido eliminada, la autocorrelación no estacional aún persiste.}
-    \label{diferenciado}
-\end{figure}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\linewidth]{figuras/boxplots_precios.png}
-    \caption[ACF y PACF para d=D=1, s=24]{ACF y PACF de la serie con diferenciación doble. Ahora la serie es estacionaria y los rezagos significativos nos indican los posibles órdenes $p, q, P, Q$.}
-    \label{dobledifereniado}
+    \includegraphics[width=0.60\linewidth]{figuras/ACFPACFdD1.png}
+    \caption[ACF y PACF serie temporal diferenciada $d=D=1$.]{De nuevo, es visible la periodicidad en los picos con estacionalidad 24, sin embargo, esta vez se aprecia la caída en los picos, lo que sugiere haber encontrado ya la estacionariedad, además de que esto nos ayuda a determinar los posibles órdenes, como $p,P,Q,q \in \{0,1,2\} $.}
+    \label{ACFPACFDd1}
 \end{figure}
 
-Basado en el análisis de las funciones de autocorrelación, se han preseleccionado los siguientes tres modelos con sus respectivos órdenes:
+Basado en el análisis de las funciones de autocorrelación y en una herramienta, \textit{pmdarima}, que permite probar y obtener los órdenes óptimos, se han preseleccionado los siguientes tres modelos:
 
 \begin{itemize}
-    \item \textbf{Modelo 1: SARIMAX(1,1,1)x(1,1,1,24)}:
-    Se elige este modelo porque los picos en los gráficos de ACF y PACF de la serie doblemente diferenciada son significativos en el primer rezago no estacional y estacional. Esto sugiere un orden de 1 para los componentes AR, MA, y sus contrapartes estacionales.
+    \item \textbf{Modelo 1: SARIMAX(2,1,1)x(1,1,1,24)}:
 
-    \item \textbf{Modelo 2: SARIMAX(0,1,1)x(0,1,1,24)}:
-    Este modelo se considera debido a que, en el gráfico PACF, los picos son más pronunciados en los primeros rezagos, lo que podría indicar la preponderancia de los términos de media móvil.
 
-    \item \textbf{Modelo 3: SARIMAX(2,1,0)x(2,1,0,24)}:
-    Se opta por este modelo como alternativa, ya que los gráficos de ACF y PACF también muestran una posible influencia de los segundos rezagos, tanto estacionales como no estacionales.
+    \item \textbf{Modelo 2: SARIMAX(1,1,1)x(1,1,1,24)}:
+
+
+    \item \textbf{Modelo 3: SARIMAX(2,1,0)x(1,1,0,24)}:
+ 
 \end{itemize}
 
 Estos tres modelos serán evaluados y comparados utilizando métricas como el MAE y el RMSE para determinar cuál de ellos ofrece un mejor ajuste a los datos.
@@ -389,23 +386,6 @@ study = optimize_hyperparameters(
     use_learning_rate_finder=False,  # use Optuna to find ideal learning rate or use in-built learning rate finder
 )
 \end{lstlisting} 
-
-La optimización de hiperparámetros se realiza utilizando la función \texttt{optimize\_hyperparameters()} incluida en la librería \texttt{pytorch\_forecasting}, la cual emplea internamente el motor de búsqueda bayesiana \textbf{Optuna}.
-
-Esta herramienta permite explorar automáticamente combinaciones de parámetros del modelo con el objetivo de minimizar la función de pérdida en el conjunto de validación. En nuestro caso, se configuró una búsqueda con un total de \texttt{n\_trials=200} ejecuciones distintas, cada una con un máximo de \texttt{50} épocas de entrenamiento. A continuación se detallan los principales rangos definidos para la exploración:
-
-\begin{itemize}
-    \item \texttt{gradient\_clip\_val\_range=(0.01, 1.0)}: rango para el recorte de gradientes, útil para estabilizar el entrenamiento.
-    \item \texttt{hidden\_size\_range=(8, 128)}: número de neuronas en las capas ocultas del modelo.
-    \item \texttt{hidden\_continuous\_size\_range=(8, 128)}: dimensión de las variables continuas procesadas por el modelo.
-    \item \texttt{attention\_head\_size\_range=(1, 4)}: número de cabezas de atención en el mecanismo de self-attention.
-    \item \texttt{learning\_rate\_range=(0.001, 0.1)}: rango de búsqueda para la tasa de aprendizaje.
-    \item \texttt{dropout\_range=(0.1, 0.3)}: probabilidad de desconexión aleatoria de neuronas, como regularización contra el sobreajuste.
-    \item \texttt{reduce\_on\_plateau\_patience=4}: número de épocas sin mejora antes de reducir la tasa de aprendizaje automáticamente.
-\end{itemize}
-
-La búsqueda se realiza utilizando validación sobre los datos de evaluación definidos previamente, y el mejor modelo se almacena automáticamente en el directorio indicado (\texttt{model\_path}). Esta estrategia permite seleccionar la configuración más adecuada sin requerir intervención manual, aumentando así la eficiencia y la reproducibilidad del proceso de modelado.
-
 %
 %
 %
