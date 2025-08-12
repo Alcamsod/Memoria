@@ -145,20 +145,39 @@ En las siguientes imágenes podemos ver los gráficos de ACF y PACF para la seri
     \label{ACFPACFDd1}
 \end{figure}
 
-Basado en el análisis de las funciones de autocorrelación y en una herramienta, \textit{pmdarima}, que permite probar y obtener los órdenes óptimos, se han preseleccionado los siguientes tres modelos:
+Basado en el análisis de las funciones de autocorrelación y en una herramienta, \textit{pmdarima}, que permite probar y obtener los órdenes óptimos, se han seleccionado los siguientes tres modelos, donde se muestran las gráficas de predicción obtenidas:
 
 \begin{itemize}
     \item \textbf{Modelo 1: SARIMAX(2,1,1)x(1,1,1,24)}:
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.60\linewidth]{figuras/SARIMAX_pred21011024.png}
+    \caption[Predicción SARIMAX (2,1,1)x(1,1,1,24)]{Predicción para junio con el SARIMAX de órden (2,1,1)x(1,1,1,24).}
+    \label{SARIMAX (2,1,1)x(1,1,1,24)}
+    \end{figure}
 
 
     \item \textbf{Modelo 2: SARIMAX(1,1,1)x(1,1,1,24)}:
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.60\linewidth]{figuras/SARIMAX_pred21011024.png}
+    \caption[Predicción SARIMAX (1,1,1)x(1,1,1,24)]{Predicción para junio con el SARIMAX de órden (1,1,1)x(1,1,1,24).}
+    \label{SARIMAX (1,1,1)x(1,1,1,24)}
+    \end{figure}
 
 
-    \item \textbf{Modelo 3: SARIMAX(2,1,0)x(1,1,0,24)}:
+    \item \textbf{Modelo 3: SARIMAX(2,1,0)x(1,1,0,24)}: 
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.60\linewidth]{figuras/SARIMAX_pred21011024.png}
+    \caption[Predicción SARIMAX (2,1,0)x(1,1,0,24)]{Predicción para junio con el SARIMAX de órden (2,1,0)x(1,1,0,24).}
+    \label{SARIMAX (2,1,0)x(1,1,0,24)}
+    \end{figure}
+    
  
 \end{itemize}
 
-Estos tres modelos serán evaluados y comparados utilizando métricas como el MAE y el RMSE para determinar cuál de ellos ofrece un mejor ajuste a los datos.
+Puede apreciarse a simple vista que para un horizonte de predicción de un mes este método no es fiable. El modelo SARIMAX supone relaciones lineales y la volatilidad y complejidad del precio de la luz, además en un intervalo de tiempo tan grande como un mes no reporta predicciones satisfactorias.
 %
 %
 %
@@ -338,53 +357,64 @@ Respecto a la decisión de hiperparámetros de nuestro modelo TFT es más compli
 
 En nuestro caso particular, muestro a continuación parte del código utilizado en el que se ve cómo se refina la configuración:
 \begin{lstlisting}[caption={Código de implementación del modelo TFT.}, label = {TFT_model_implementacion}]
-# Entrenamos el modelo
-# Configuración de la forma de entrenamiento
+study = optimize_hyperparameters(
+    train_dataloader=train_dataloader,
+    val_dataloader=val_dataloader,
+    model_path="optuna_tft", 
+    n_trials=500,
+    max_epochs=100,
+    gradient_clip_val_range=(0.01, 1.0),
+    hidden_size_range=(4, 128),
+    hidden_continuous_size_range=(4, 64),
+    attention_head_size_range=(1, 4),
+    learning_rate_range=(0.001, 0.3),
+    dropout_range=(0.1, 0.3),
+    trainer_kwargs=dict(
+        accelerator="gpu",
+        devices=1
+    ),
+    use_learning_rate_finder=False,
+    verbose=True
+)
+
+with open("tft_study_results.pkl", "wb") as fout:
+    pickle.dump(study, fout)
+
+best_params = study.best_trial.params
+print("<------------ MEJORES HIPERPARÁMETROS ENCONTRADOS ------------>")
+print(best_params)
+
 early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=10, verbose=False, mode="min")
+lr_monitor = LearningRateMonitor()
+checkpoint_callback = ModelCheckpoint(
+    dirpath="checkpoints_tft_CONbusqueda", # Cambiar carpeta cuando ejecutemos la búsqueda
+    filename="tft-epoch{epoch:02d}-val_loss{val_loss:.2f}",
+    auto_insert_metric_name=False,
+    monitor="val_loss",
+    mode="min",        
+    save_top_k=1,      
+    save_last=True     
+)
+
 trainer = Trainer(
     max_epochs=50,
-    accelerator="cpu",
+    accelerator="gpu",
     devices=1,
     gradient_clip_val=0.1,
-    limit_train_batches=30,
-    callbacks=[early_stop_callback],
+    callbacks=[lr_monitor, early_stop_callback, checkpoint_callback],
 )
+
 tft = TemporalFusionTransformer.from_dataset(
     training_dataset,
-    # Configuraciones más importantes
-    learning_rate=0.03,
-    hidden_size=32,
-    # Para datasets grandes 3-4
-    attention_head_size=4,
-    # Evitar overfitting (entre 0.1-0.3)
-    dropout=0.1,
-    hidden_continuous_size=16,
+    learning_rate=best_params['learning_rate'],
+    hidden_size=best_params['hidden_size'],
+    attention_head_size=best_params['attention_head_size'],
+    dropout=best_params['dropout'],
+    hidden_continuous_size=best_params['hidden_continuous_size'],
     output_size=7,
     loss=QuantileLoss(),
 )
-print(f"El número de parámetros en la red es: {tft.size() / 1e3:.1f}k")
-trainer.fit(
-    tft,
-    train_dataloaders=train_dataloader,
-    val_dataloaders=val_dataloader,
-)
-# Optimizamos los hiperparámetros
-study = optimize_hyperparameters(
-    train_dataloader,
-    val_dataloader,
-    model_path="optuna_test",
-    n_trials=200,
-    max_epochs=50,
-    gradient_clip_val_range=(0.01, 1.0),
-    hidden_size_range=(8, 128),
-    hidden_continuous_size_range=(8, 128),
-    attention_head_size_range=(1, 4),
-    learning_rate_range=(0.001, 0.1),
-    dropout_range=(0.1, 0.3),
-    trainer_kwargs=dict(limit_train_batches=30),
-    reduce_on_plateau_patience=4,
-    use_learning_rate_finder=False,  # use Optuna to find ideal learning rate or use in-built learning rate finder
-)
+print(f"Número de parámetros del modelo: {tft.size() / 1e3:.1f}k")
 \end{lstlisting} 
 %
 %
@@ -400,9 +430,9 @@ Para la elección de lo que podemos entender como \textit{mejor modelo} se han c
         & \multicolumn{3}{c}{Test set} & \multicolumn{3}{c}{Predicción} \\
         Modelo & MAE & RMSE & R$^2$ & MAE & RMSE & R$^2$ \\
         \hline
-        SARIMAX(1,1,1)x(1,1,1,24) & 47.98 & 12.33 & 1.95 & 84.15 & 12.89 & -1.94 \\
-        SARIMAX(2,1,1)x(1,1,1,24) & 48.12 & 12.56 & 1.94 & 84.35 & 13.01 & -1.93 \\
-        SARIMAX(1,1,0)x(1,1,0,24) & 48.05 & 12.45 & 1.94 & 84.22 & 12.95 & -1.93 \\
+        SARIMAX(2,1,1)x(1,1,1,24) & 47.26 & 61.64 & -4.93 & 54.68 & 66.83 & -1.07 \\
+        SARIMAX(1,1,1)x(1,1,1,24) & 47.11 & 61.77 & -4.96 & 55.00 & 67.16 & -1.09 \\
+        SARIMAX(2,1,0)x(1,1,0,24) & 47.29 & 61.90 & -4.98 & 55.25 & 67.53 & -1.11 \\
         XGBoost 70/30 + RM precio  & 7.30  & 11.08 & 0.96 & 7.43  & 12.23 & 0.94 \\
         XGBoost 90/10 + RM precio  & 6.33  & 10.78 & 0.92 & 6.75  & 11.14 & 0.95 \\
         XGBoost 90/10 + RM todo    & 7.67  & 11.60 & 0.95 & 7.74  & 12.94 & 0.94 \\
@@ -489,7 +519,7 @@ Finalmente, debería considerarse el rendimiento $\eta$ del horno. Podríamos su
 \subsubsection{Implementación}
 %
 %
-Como se ha mencionado, el trasfondo teórico de un proceso como este es, en muchos casos, innecesarios para dar una solución en el ámbito profesional, si bien es lo técnicamente correcto \footnote{Evidentemente, para llevarlo al grado más óptimo habría que introducir pérdidas de calor, más factores disipativos que puedan afectar al proceso, etc.}. Sin embargo, entender este planteamiento es importante debido a que la solución que se le otorga a una empresa está fundamenteada en ello.
+Como se ha mencionado, el trasfondo teórico de un proceso como este es, en muchos casos, innecesario para dar una solución en el ámbito profesional, si bien es lo técnicamente correcto \footnote{Evidentemente, para llevarlo al grado más óptimo habría que introducir pérdidas de calor, más factores disipativos que puedan afectar al proceso, etc.}. Sin embargo, entender este planteamiento es importante debido a que la solución que se le otorga a una empresa está fundamenteada en ello.
 
 Por lo general, no solo en este proyecto, sino también en la investigación realizada, lo más demandando en procesos de este tipo son las \textit{curvas de potencia} o respecto de otras magnitudes como el calor, temperatura... Del modelo planteado anteriormente podemos extraer ciertas conlusiones.
 
@@ -501,10 +531,20 @@ De igual modo, las curvas de temperatura permiten visualizar el perfil térmico 
 \subsection{Optimización de la superficie de enfriamiento}
 %
 %
-El presente problema aborda la distribución de las piezas metálicas recién fundidas sobre la superficie de enfriamiento disponible en la nave. Cláramente, el objetivo es maximizar el número total de piezas que pueden colocarse simultáneamente. Esta superficie cuenta además con restricciones físicas relacionadas con la seguridad y operatividad del proceso, como márgenes laterales y pasillos interiores obligatorios de al menos 1.5 metros de ancho.
+En último lugar, nos encontramos con el problema que aborda la distribución de las piezas metálicas obtenidas de la colada en una superficie para que enfríen. Cláramente, el objetivo es maximizar la cantidad de piezas depositadas en la misma de manera simultánea. Además de las condiciones lógicas de tamaño, se cuenta con otras restricciones como son que las piezas no son apilables (de ahí que se trate de un problema de superficie y no de volumen) y es necesario dejar unos márgenes de seguridad entre piezas. En la resolución de este problema participé en la propuesta de resolución pero no he llegado a implementar completamente ésta por lo que voy a detallar el flujo de trabajo. De manera anterior a este proceso se supone que se ha relizado la predicción de los precios de la luz y con ello una propuesta de planificación, de manera que ahora sería el momento de comrpobar cómo se va a distribuir en la nave.
+\subsubsection{Tamaño de cajas}
+     En función del diámetro de las piezas fundidas se asignan cajas, de forma cuadrada o rectangular, rellenas de arena en las que la pieza reposará hasta la siguiente fase del proceso
+\subsubsection{Chequeo de espacio} Una vez definidas las cajas, se comprueba si el área disponible es suficiente para albergar la carga de trabajo suficiente.
+\begin{itemize}
+    \item En caso negativo se rechaza la propuesta, mostrando datos como la superficie necesaria y ciertas combinaciones de piezas que permitirían depositar el material, por si el cliente quisiera aceptar la contrapropuesta y modificar la planificación.
+    \item En caso positivo, se procede a la siguiente fase.
+   \end{itemize}
+Hay que remarcar aquí que, como se ha mencionado anteriormente, entre las cajas debe existir un margen de seguridad. Para incluir esto en el modelo se implementa en la función del área de cada pieza, es decir, si llamamos $A$ al área de la superficie de trabajo necesaria, de manera que $A = \sum A_i$ donde $i \in {\text{piezas}}$, entonces para cada pieza tendríamos que tener en cuenta que $A_i = (a+\frac{d}{2})\cdot(b+\frac{d}{2})$, con $a,b$ los lados de la caja y $d$ el margen de seguridad.
+\subsubsection{Distribución de superficie} 
+Una vez validada la propuesta, se procede a distribuir las cajas. Para ello se tienen que tener en cuenta una serie de circunstancias:
 
-Cada pieza fundida es clasificada según su diametro y para su manipulación ha sido previamente colocada en una caja cuya dimensión se determina en función del tipo correspondiente. Estas cajas se disponen en planta sobre la superficie, sin posibilidad de apilarse. Una vez colocadas, no pueden solaparse ni invadir los pasillos o márgenes de seguridad. Es decir, deben respetarse las distancias mínimas entre ellas y con respecto a los bordes del área de enfriamiento. Esto impone restricciones geométricas estrictas sobre su posicionamiento.
+\subsubsection{Comprobación de solución}   
 
-El objetivo final es obtener una disposición óptima que maximice la cantidad total de piezas colocadas, permitiendo una planificación eficiente del enfriado. Dado el carácter discreto y combinatorio del problema, este puede abordarse mediante algoritmos de optimización específicos como métodos de empaquetado 2D, algoritmos genéticos o formulaciones de programación entera si se requiere una solución exacta.
+
 %
 %
