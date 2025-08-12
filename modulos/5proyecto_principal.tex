@@ -66,19 +66,19 @@ En cuanto a los boxplots, puede observarse cómo en el ámbito anual (figura \cr
 \begin{subfigure}[b]{0.6\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figuras/matriz_correlacion.png}
-\caption[Matriz de correlación]{Matriz de correlación}
+\caption[Matriz de correlación]{Matriz de correlación.}
 \label{Matriz de correlacion}
 \end{subfigure}
 \begin{subfigure}[b]{0.4\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figuras/boxplot_diario.png}
-\caption[Boxplot diario]{Boxplot diario}
+\caption[Boxplot diario]{Boxplot diario.}
 \label{Booxplotdiario}
 \end{subfigure}
 \begin{subfigure}[b]{0.4\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figuras/boxplot_anual.png}
-\caption[Boxplot anual]{Boxplot anual}
+\caption[Boxplot anual]{Boxplot anual.}
 \label{Boxplotanual}
 \end{subfigure}
 \caption{Figuras del análisis exploratorio.}
@@ -121,8 +121,8 @@ La predicción con SARIMAX es un proceso iterativo o recursivo:
     
     \item \textbf{Predicción:} Para predecir el horizonte futuro (ej. las próximas 24 horas), el modelo:
     \begin{itemize}
-        \item Predice el primer paso (t+1) utilizando todos los datos históricos reales.
-        \item Para predecir el segundo paso (t+2), utiliza los datos históricos y la predicción que acaba de hacer para t+1 como si fuera un dato real.
+        \item Predice el primer paso $(t+1)$ utilizando todos los datos históricos reales.
+        \item Para predecir el segundo paso $(t+2)$, utiliza los datos históricos y la predicción que acaba de hacer para t+1 como si fuera un dato real.
     \end{itemize}
 \end{itemize}
 
@@ -134,13 +134,13 @@ En las siguientes imágenes podemos ver los gráficos de ACF y PACF para la seri
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.60\linewidth]{figuras/ACFPACFdD0.png}
+    \includegraphics[width=0.7\linewidth]{figuras/ACFPACFdD0.png}
     \caption[ACF y PACF serie temporal original.]{Podemos observar el ACF y el PACF de la serie temporal original, sin diferenciación. En ellos podemos ver que hay una clara estacionalidad alrededor del lag 24, lo que concuerda con el pensamiento de una periodicidad diaria, cada 24 horas. Además, que no haya un decaimiento fuerte hace pensar que requiera diferenciación.}
     \label{ACFPACFDd0}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.60\linewidth]{figuras/ACFPACFdD1.png}
+    \includegraphics[width=0.7\linewidth]{figuras/ACFPACFdD1.png}
     \caption[ACF y PACF serie temporal diferenciada $d=D=1$.]{De nuevo, es visible la periodicidad en los picos con estacionalidad 24, sin embargo, esta vez se aprecia la caída en los picos, lo que sugiere haber encontrado ya la estacionariedad, además de que esto nos ayuda a determinar los posibles órdenes, como $p,P,Q,q \in \{0,1,2\} $.}
     \label{ACFPACFDd1}
 \end{figure}
@@ -246,7 +246,7 @@ Para la elección de los hiperparámetros del modelo, conocida como \textit{hype
 
 A continuación, se muestra un fragmento de código que implementa la validación cruzada temporal y la búsqueda de hiperparámetros con \textit{GridSearchCV}.
 
-\begin{lstlisting}[caption={Búsqueda óptima de hiperparámetros y validación cruzada en el modelo XGBoost }, label={TSSyGSXGBoost}]
+\begin{lstlisting}[caption={Búsqueda óptima de hiperparámetros y validación cruzada en el modelo XGBoost.}, label={TSSyGSXGBoost}]
 param_grid = {
     'n_estimators': [300, 325, 350, 375, 400, 425, 450],
     'learning_rate': [0.02, 0.03, 0.04, 0.05, 0.06, 0.07],
@@ -335,7 +335,7 @@ La predicción con TFT se realiza en un solo paso:
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{figuras/TFTarquitectura.png}
-    \caption[Arquitectura de TFT]{Arquitectura del TFT \cite{TFT}}
+    \caption[Arquitectura de TFT]{Arquitectura del TFT \cite{TFT}.}
     \label{fig:placeholder}
 \end{figure}
 %
@@ -539,12 +539,14 @@ En último lugar, nos encontramos con el problema que aborda la distribución de
     \item En caso negativo se rechaza la propuesta, mostrando datos como la superficie necesaria y ciertas combinaciones de piezas que permitirían depositar el material, por si el cliente quisiera aceptar la contrapropuesta y modificar la planificación.
     \item En caso positivo, se procede a la siguiente fase.
    \end{itemize}
-Hay que remarcar aquí que, como se ha mencionado anteriormente, entre las cajas debe existir un margen de seguridad. Para incluir esto en el modelo se implementa en la función del área de cada pieza, es decir, si llamamos $A$ al área de la superficie de trabajo necesaria, de manera que $A = \sum A_i$ donde $i \in {\text{piezas}}$, entonces para cada pieza tendríamos que tener en cuenta que $A_i = (a+\frac{d}{2})\cdot(b+\frac{d}{2})$, con $a,b$ los lados de la caja y $d$ el margen de seguridad.
+Hay que remarcar aquí que, como se ha mencionado anteriormente, entre las cajas debe existir un margen de seguridad. Para incluir esto en el modelo se implementa en la función del área de cada pieza, es decir, si llamamos $A$ al área de la superficie de trabajo necesaria, de manera que $A = \sum A_i$ donde $i \in \{\text{piezas}\}$, entonces para cada pieza tendríamos que tener en cuenta que $A_i = (a+\frac{d}{2})\cdot(b+\frac{d}{2})$, con $a,b$ los lados de la caja y $d$ el margen de seguridad.
 \subsubsection{Distribución de superficie} 
-Una vez validada la propuesta, se procede a distribuir las cajas. Para ello se tienen que tener en cuenta una serie de circunstancias:
+Una vez validada la propuesta, se procede a distribuir las cajas. Para ello se tienen que tener en cuenta la forma de la superficie, dado que hay que diferenciar entre la capacidad de almacenaje y la capacidad de distribución, me explico: Podríamos tener una superficie rectangular con una gran número de cajas que dividan mi área en dos zonas, por ejemplo de $2$ m$^2$, entonces no podríamos introducir una pieza de $4$ m$^2$ aunque quisiéramos. Matemáticamente hablando deberíamos ver cómo de conexa es nuestra superficie.
+
+Una vez superada esta parte, se procede a distribuir las piezas, colocando las más grandes en primer lugar y se van comprobando de manera combinatoria las posibilidades del resto. Esta forma de actuar, a fuerza bruta, se eligió porque ciertamente no se contaba con un gran número de piezas por lo que la complejidad de un problema como este, que crece como $n!$ si $n$ es el número de piezas, no sería un gran problema en la práctica. Si contasemos con un mayor número de cajas se debería optar por un algoritmo mucho más refinado que disminuyera la cantidad de prueba-error.
 
 \subsubsection{Comprobación de solución}   
 
-
+Una vez realizada la distribución se representa visualmente, se actualizan las variables y se comprueba, tanto de manera gráfica como repitiendo el proceso si la solución encontrada es válida o no. Si es así, se procede a la siguiente fase, si no, se vuelve a la fase de chequeo de espacio y se repite el proceso.
 %
 %
