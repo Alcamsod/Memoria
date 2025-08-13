@@ -18,7 +18,7 @@ Los paquetes utilizados se incluyen en el requirements (py 3.10):
 
 ## ✅ Resultados
 
-### Modelo 2.1
+### Modelo 1.1
 
 - df['hora'] = df.index.hour
 - df['dia_semana'] = df.index.dayofweek
@@ -65,7 +65,7 @@ n_splits = 3
 
 ---
 
-### Modelo 2.2
+### Modelo 1.2
 
   -df['hora'] = df.index.hour
   -df['dia_semana'] = df.index.dayofweek

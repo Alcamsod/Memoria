@@ -185,7 +185,7 @@ Puede apreciarse a simple vista que para un horizonte de predicción de un mes e
 %
 %
 %
-Este modelo, también basado en árboles de decisión, destaca por su sencillez de implementación y su gran versatilidad para distintos tipos de problemas, aunque, como ocurre habitualmente en modelos de este tipo, presenta una menor interpretabilidad sobre el funcionamiento interno. Su fortaleza radica en el uso de un enfoque de ensamblado (\textit{ensemble}) mediante \textit{bagging}, que combina múltiples árboles de decisión entrenados de manera independiente a partir de boostrap y predictores. Este procedimiento permite reducir la varianza del modelo y mejorar la capacidad de generalización, incluso sin requerir un ajuste tan fino como otros métodos más complejos. Entre las características más relevantes de Random Forest:
+Este modelo, también basado en árboles de decisión, destaca por su sencillez de implementación y su gran versatilidad para distintos tipos de problemas, aunque, como ocurre habitualmente en modelos de este tipo, presenta una menor interpretabilidad sobre el funcionamiento interno. Su fortaleza radica en el uso de un enfoque de ensamblado (\textit{ensemble}) mediante \textit{bagging}, que combina múltiples árboles de decisión entrenados de manera independiente a partir de bootstrap y predictores. Este procedimiento permite reducir la varianza del modelo y mejorar la capacidad de generalización, incluso sin requerir un ajuste tan fino como otros métodos más complejos. Entre las características más relevantes de Random Forest:
 
 \begin{itemize}
     \item \textbf{Robustez frente al \textit{overfitting}:} El uso de múltiples árboles entrenados con subconjuntos aleatorios ayuda a evitar que el modelo memorice el conjunto de entrenamiento, reduciendo el riesgo de sobreajuste.
@@ -348,7 +348,7 @@ Respecto a la decisión de hiperparámetros de nuestro modelo TFT es más compli
     \item \textbf{input chunk length}: Define el número de pasos de tiempo pasados que el modelo utiliza como entrada para hacer una predicción. En nuestro caso, gicimos uso de tres mese de datos, es decir, $24 \times 7 \times 4 \times 3$ pasos de tiempo.
     \item \textbf{output chunk length}: Determina el número de pasos de tiempo futuros que el modelo debe predecir. Como se mencionó anteriormente, la predicción se realió para un mes, lo que significa $24 \times 7 \times 4$ pasos.
      
-    \item \textbf{hidden size}: Se refiere a la dimensión de las capas ocultas que forman la red. En este caso, un valor demasiado alto puede elevar la copmlejidad del modelo, llevando a \textit{overfitting}.
+    \item \textbf{hidden size}: Se refiere a la dimensión de las capas ocultas que forman la red. En este caso, un valor demasiado alto puede elevar la complejidad del modelo, llevando a \textit{overfitting}.
      
     \item \textbf{attention heads}: Definde el número de capas de atención del modelo, es decir, nos permite regular la \textit{atención} que el TFT va a prestar a los diferentes componentes de la serie temporal de manera simultánea. Este hiperparámetro es clave para capturar las relación a largo plazo en nuestra serie.
      
@@ -436,35 +436,40 @@ Para la elección de lo que podemos entender como \textit{mejor modelo} se han c
         XGBoost 70/30 + RM precio  & 7.30  & 11.08 & 0.96 & 7.43  & 12.23 & 0.94 \\
         XGBoost 90/10 + RM precio  & 6.33  & 10.78 & 0.92 & 6.75  & 11.14 & 0.95 \\
         XGBoost 90/10 + RM todo    & 7.67  & 11.60 & 0.95 & 7.74  & 12.94 & 0.94 \\
-        RF (\textbf{SIN} búsqueda) & 5.17  & 8.63  & 0.92 & 6.75  & 11.71 & 0.94 \\
-        RF (\textbf{CON} búsqueda) & 10.09 & 14.38 & 0.76 & 13.36 & 18.64 & 0.87 \\
-        TFT (\textbf{SIN} búsqueda)& 7.15  & 11.45 & 0.98 & 7.35  & 11.75 & 0.97 \\
-        TFT (\textbf{CON} búsqueda)& 7.02  & 11.30 & 0.98 & 7.20  & 11.60 & 0.97 \\
+        RF (SIN búsqueda) & 5.17  & 8.63  & 0.92 & 6.75  & 11.71 & 0.94 \\
+        RF (CON búsqueda) & 10.09 & 14.38 & 0.76 & 13.36 & 18.64 & 0.87 \\
+        TFT (SIN búsqueda)& 15.16    & 21.10    & 0.34   & 45.63    & 56.12          & -0.19 \\
+        TFT (CON búsqueda)&19.43    & 24.10    & 0.52   & 25.87    & 30.19          & 0.45   \\
+        TFT (CON búsqueda completa)& 7.02  & 11.30 & 0.98 & 7.20  & 11.60 & 0.97 \\
     \end{tabular}
     \caption{Resultados por modelos para cada conjunto de datos.}
     \label{tab:resultados_modelos}
 \end{table}
 
-A la vista de los resultados de la tabla \ref{tab:resultados_modelos} podemos observar que el modelo \textit{SARIMAX} es el que peores métricas muestra, no consiguiendo captar de manera general en comportamiento de la serie temporal. Cabe destacar en este punto que también se trata del modelo que al que menos tiempo he invertido ya que era consciente que los otros iban a reportar mejores resultados de manera más sencilla y rápida. Por otro lado, los modelos que más destacan son el \textit{XGBoost} y el \textit{TFT}.
+A la vista de los resultados de la tabla \ref{tab:resultados_modelos} podemos observar que el modelo \textit{SARIMAX} es el que peores métricas muestra, no consiguiendo captar de manera general el comportamiento de la serie temporal. Cabe destacar en este punto que también se trata del modelo que al que menos tiempo he invertido ya que era consciente que los otros iban a reportar mejores resultados de manera más sencilla y rápida. Por otro lado, los modelos que más destacan son el \textit{XGBoost} y el \textit{TFT}.
 
 Este segundo, como ya se ha comentado, es un modelo más complejo. Se trata de una adaptación de los \textit{Transformers} (modelos de deep learning utilizados en el procesamiento de lenguaje natural como GPT) a series temporales. Sin embargo, en la relación tiempo o dificultad y resultados ambos se encuentram parejos. En la siguiente gráfica se muestran la predicción final para ambos modelos, con intervalos de confianza al $95\%$.
 \begin{figure}[H]
 \centering
 \begin{subfigure}[b]{0.45\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figuras/historico_precios.png}
-\caption[Predicción mediante XGBoost]{.}
+\includegraphics[width=\textwidth]{figuras/XGBoost_prediccion.png}
+\caption[Predicción mediante XGBoost]{XGBoost.}
 \label{PrediccionXGBoost}
 \end{subfigure}
 \begin{subfigure}[b]{0.45\textwidth}
 \centering
-\includegraphics[width=\textwidth]{figuras/historico_precios.png}
-\caption[Predicción mediante TFT]{.}
+\includegraphics[width=\textwidth]{figuras/TFT_predCon1.png}
+\caption[Predicción mediante TFT]{TFT.}
 \label{PrediccionTFT}
 \end{subfigure}
 \caption{Predicciones para junio de 2025.}
 \label{PrediccionesLuz}
 \end{figure}
+
+Por motivos de tiempo no soy consciente de si se han realizado más búsquedas para el TFT o algún otro modelo ni de la elección final. Sin embargo, mi recomendación y sensación, dentro del contexto del proyecto, es que el modelo \textit{XGBoost} es la mejor elección en la relación de tiempo y resultados. El interés principal recaía en el comportamiento y la elección del instante en el que llevar a cabo las fundiciones y no tanto un precio muy exacto. Por lo tanto, el modelo \textit{XGBoost} es el que mejor se adapta a las necesidades del proyecto, siendo capaz de predecir con una precisión aceptable y con un tiempo de entrenamiento razonable.
+%
+%
 %
 \subsection{Modelo físico}
 %
@@ -521,9 +526,9 @@ Finalmente, debería considerarse el rendimiento $\eta$ del horno. Podríamos su
 %
 Como se ha mencionado, el trasfondo teórico de un proceso como este es, en muchos casos, innecesario para dar una solución en el ámbito profesional, si bien es lo técnicamente correcto \footnote{Evidentemente, para llevarlo al grado más óptimo habría que introducir pérdidas de calor, más factores disipativos que puedan afectar al proceso, etc.}. Sin embargo, entender este planteamiento es importante debido a que la solución que se le otorga a una empresa está fundamenteada en ello.
 
-Por lo general, no solo en este proyecto, sino también en la investigación realizada, lo más demandando en procesos de este tipo son las \textit{curvas de potencia} o respecto de otras magnitudes como el calor, temperatura... Del modelo planteado anteriormente podemos extraer ciertas conlusiones.
+Por lo general, no solo en este proyecto, sino también en la investigación realizada, lo más demandando en procesos de este tipo son las \textit{curvas de potencia} o respecto de otras magnitudes como el calor, temperatura... Del modelo planteado anteriormente podemos extraer ciertas conclusiones.
 
-Es habitual que las empresas no tengan acceso a un histórico muy detallado del proceso, por lo que en ocasiones contamos con medidas escasas, sin embargo, podemos observar como la potencia ($P = Q/t$) crece de manera proporcional al calentamiento y depende directamente de la masa y las propiedades térmicas del material. Por ejemplo, una curva de potencia típica muestra cómo varía la demanda energética a lo largo del ciclo de fundición: inicialmente, la potencia requerida es mayor durante el calentamiento rápido, disminuyendo una vez alcanzada la temperatura de fusión y estabilizándose durante el mantenimiento térmico (una etapa muy común en fundiciones por ejemlpo para eliminar impurezas).
+Es habitual que las empresas no tengan acceso a un histórico muy detallado del proceso, por lo que en ocasiones contamos con medidas escasas, sin embargo, podemos observar como la potencia ($P = Q/t$) crece de manera proporcional al calentamiento y depende directamente de la masa y las propiedades térmicas del material. Por ejemplo, una curva de potencia típica muestra cómo varía la demanda energética a lo largo del ciclo de fundición: inicialmente, la potencia requerida es mayor durante el calentamiento rápido, disminuyendo una vez alcanzada la temperatura de fusión y estabilizándose durante el mantenimiento térmico (una etapa muy común en fundiciones por ejemplo para eliminar impurezas).
 
 De igual modo, las curvas de temperatura permiten visualizar el perfil térmico de la pieza, identificando los puntos críticos del proceso (como el paso por la temperatura de fusión). Estas curvas son útiles para ajustar los hiperparámetros del horno, optimizar los tiempos de ciclo y prever posibles incidencias.
 %
@@ -531,7 +536,7 @@ De igual modo, las curvas de temperatura permiten visualizar el perfil térmico 
 \subsection{Optimización de la superficie de enfriamiento}
 %
 %
-En último lugar, nos encontramos con el problema que aborda la distribución de las piezas metálicas obtenidas de la colada en una superficie para que enfríen. Cláramente, el objetivo es maximizar la cantidad de piezas depositadas en la misma de manera simultánea. Además de las condiciones lógicas de tamaño, se cuenta con otras restricciones como son que las piezas no son apilables (de ahí que se trate de un problema de superficie y no de volumen) y es necesario dejar unos márgenes de seguridad entre piezas. En la resolución de este problema participé en la propuesta de resolución pero no he llegado a implementar completamente ésta por lo que voy a detallar el flujo de trabajo. De manera anterior a este proceso se supone que se ha relizado la predicción de los precios de la luz y con ello una propuesta de planificación, de manera que ahora sería el momento de comrpobar cómo se va a distribuir en la nave.
+En último lugar, nos encontramos con el problema que aborda la distribución de las piezas metálicas obtenidas de la colada en una superficie para que enfríen. Cláramente, el objetivo es maximizar la cantidad de piezas depositadas en la misma de manera simultánea. Además de las condiciones lógicas de tamaño, se cuenta con otras restricciones como son que las piezas no son apilables (de ahí que se trate de un problema de superficie y no de volumen) y es necesario dejar unos márgenes de seguridad entre piezas. En la resolución de este problema participé en la propuesta de resolución pero no he llegado a implementar completamente ésta por lo que voy a detallar el flujo de trabajo. De manera anterior a este proceso se supone que se ha relizado la predicción de los precios de la luz y con ello una propuesta de planificación, de manera que ahora sería el momento de comprobar cómo se va a distribuir en la nave.
 \subsubsection{Tamaño de cajas}
      En función del diámetro de las piezas fundidas se asignan cajas, de forma cuadrada o rectangular, rellenas de arena en las que la pieza reposará hasta la siguiente fase del proceso
 \subsubsection{Chequeo de espacio} Una vez definidas las cajas, se comprueba si el área disponible es suficiente para albergar la carga de trabajo suficiente.
@@ -545,8 +550,59 @@ Una vez validada la propuesta, se procede a distribuir las cajas. Para ello se t
 
 Una vez superada esta parte, se procede a distribuir las piezas, colocando las más grandes en primer lugar y se van comprobando de manera combinatoria las posibilidades del resto. Esta forma de actuar, a fuerza bruta, se eligió porque ciertamente no se contaba con un gran número de piezas por lo que la complejidad de un problema como este, que crece como $n!$ si $n$ es el número de piezas, no sería un gran problema en la práctica. Si contasemos con un mayor número de cajas se debería optar por un algoritmo mucho más refinado que disminuyera la cantidad de prueba-error.
 
-\subsubsection{Comprobación de solución}   
+\subsubsection{Ejemplo de implementación}
 
-Una vez realizada la distribución se representa visualmente, se actualizan las variables y se comprueba, tanto de manera gráfica como repitiendo el proceso si la solución encontrada es válida o no. Si es así, se procede a la siguiente fase, si no, se vuelve a la fase de chequeo de espacio y se repite el proceso.
+Como se ha mencionado, no he llegado a implementar completamente este proceso, sin embargo, si realicé una pequeña parte de la implementación, que se muestra a continuación. En este caso, se trata de un ejemplo sencillo en el que se comprueba si una superficie rectangular es capaz de albergar una serie de cajas con unas dimensiones concretas y un margen de seguridad.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{figuras/ejemplo_packaging.png}
+    \caption[Ejempplo distribución de superficie]{Ejemplo de la distribución de las cajas en la superficie de enfriamiento. Para ello se hizo uso de la librería \textit{rectpack}, que permite realizar el problema de la mochila en 2D, o el \textit{bin packing} con rectángulos (y por tanto cuadrados).}
+    \label{fig:ejemplopackaging}
+\end{figure}
+%
+\begin{lstlisting}[caption={Código de implementación del problema de distribución de piezas.}, label={distribucion_piezas}]
+    packer = newPacker(pack_algo=GuillotineBafSas, rotation=True)
+for rect in pieces_sorted:
+    packer.add_rect(*rect)
+for w, h in sub_bins:
+    if w > 0 and h > 0:
+        packer.add_bin(w, h)
+packer.pack()
+fig, ax = plt.subplots(figsize=(10, 8))
+colors = plt.cm.get_cmap('Pastel1', len(pieces))
+coordenadas_finales = []
+ax.add_patch(plt.Rectangle((hx, hy), hw, hh, facecolor='lightgray', edgecolor='black', lw=1, alpha=0.5, hatch='//'))
+ax.add_patch(plt.Rectangle((hole_x, hole_y), hole_w, hole_h, facecolor='gray', edgecolor='black', lw=2))
+ax.text(hole_x + hole_w/2, hole_y + hole_h/2, "Agujero", ha='center', va='center', color='white', weight='bold')
+piece_idx = 0
+for bin_idx, abin in enumerate(packer):
+    bin_x, bin_y = sub_bin_positions[bin_idx]
+    for rect in abin:
+        x_margin, y_margin, w_margin, h_margin = rect.x + bin_x, rect.y + bin_y, rect.width, rect.height
+        piece_w = w_margin - margin
+        piece_h = h_margin - margin
+        piece_x = x_margin + margin / 2
+        piece_y = y_margin + margin / 2
+        coordenadas_finales.append({
+            "pieza": piece_idx + 1, "x": piece_x, "y": piece_y,
+            "ancho": piece_w, "alto": piece_h
+        })
+        ax.add_patch(plt.Rectangle((x_margin, y_margin), w_margin, h_margin,
+                                     facecolor='none', edgecolor='gray', lw=1, linestyle='--'))
+        ax.add_patch(plt.Rectangle((piece_x, piece_y), piece_w, piece_h,
+                                     facecolor=colors(piece_idx), edgecolor='black', lw=1))
+        ax.text(piece_x + piece_w/2, piece_y + piece_h/2, f'{piece_idx+1}', 
+                ha='center', va='center', fontsize=8, color='black')
+        
+        piece_idx += 1
+ax.set_xlim(0, container_width)
+ax.set_ylim(0, container_height)
+ax.set_aspect('equal', adjustable='box')
+ax.set_title("Distribución de piezas con agujero central y margen")
+plt.xlabel("Ancho (unidades)")
+plt.ylabel("Alto (unidades)")
+plt.grid(True, linestyle=':', alpha=0.6)
+\end{lstlisting}
 %
 %

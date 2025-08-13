@@ -68,17 +68,6 @@ Este método permite a XGBoost adaptarse a la predicción de series temporales, 
 
 ---
 
-## 📊 Variables Consideradas
-
-- `precio`: variable objetivo
-- `generacion_eolica`: variable exógena (lag 24h)
-- `generacion_solar`: variable exógena (lag 24h)
-- `demanda_real`: variable exógena (lag 24h)
-- `lag_1`, `lag_24`, `lag_168`: precios pasados
-- `rolling_mean_24`, `rolling_std_24`: media y desviación móviles
-- `hora`, `dia_semana`, `mes`: variables temporales
-
-
 ## 📦 Requisitos
 
 Los paquetes utilizados se incluyen en el requirements (py 3.10):
@@ -87,111 +76,174 @@ Los paquetes utilizados se incluyen en el requirements (py 3.10):
 
 ## ✅ Resultados
 
+## 2. XGBoost
+
 ### Modelo 2.1
 
-   - df['lag_1'] = df['precio'].shift(1)
-   - df['lag_24'] = df['precio'].shift(24)
-   - df['lag_168'] = df['precio'].shift(168)
-   - df['rolling_mean_24'] = df['precio'].rolling(24).mean()
-   - df['rolling_std_24'] = df['precio'].rolling(24).std()
+- **Variable objetivo**: Precio
+- **Variables explicativas**:
+  - df['lag_1'] = df['precio'].shift(1)
 
-**Train-Test set:** 70/30
+  - df['lag_24'] = df['precio'].shift(24)
 
----
+  - df['lag_168'] = df['precio'].shift(168)
+
+  - df['rolling_mean_24'] = df['precio'].rolling(24).mean()
+
+  - df['rolling_std_24'] = df['precio'].rolling(24).std()
+
+ **Train-Test set:** 70/30
+
+**Párametros de GridSearch y TimeSeriesSplit**:
+
+- param_grid =
+
+  - 'n_estimators': [300, 325, 350, 375, 400, 425, 450],
+  - 'learning_rate': [0.02, 0.03, 0.04, 0.05, 0.06, 0.07],
+  - 'max_depth': [2, 3, 4, 5]
+
+- tscv = TimeSeriesSplit(n_splits=5)
+- xgb = XGBRegressor(random_state=42, reg_alpha=5, reg_lambda=1)
+- grid_search = GridSearchCV
+  - estimator=xgb,
+  - param_grid=param_grid,
+  - scoring='neg_mean_absolute_error',
+  - cv=tscv,
+  - n_jobs=-1,
+  - verbose=2
 
 **Hiperparámetros óptimos encontrados:**
+
 - learning_rate': 0.04
 - 'max_depth': 3
 - 'n_estimators': 375
 - Mejor MAE con validación cruzada: 6.00
+
 ---
+
 Evaluación sobre el modelo:
 
-| Métrica | Test | Predicción | 
-|---|---|---|
-| **MAE** | 7.2982 | 7.4319 |
-| **RMSE** | 11.0834 | 12.2298 |
-| **R²** | 0.9548 | 0.9434 |
+| Métrica  | Test    | Predicción |
+| -------- | ------- | ---------- |
+| **MAE**  | 7.2982  | 7.4319     |
+| **RMSE** | 11.0834 | 12.2298    |
+| **R²**   | 0.9548  | 0.9434     |
+
 ---
+![alt text](pred_XG_m1.png)
+
+---
+
 ### Modelo 2.2
 
-- df['lag_1'] = df['precio'].shift(1)
-- df['lag_24'] = df['precio'].shift(24)
-- df['lag_168'] = df['precio'].shift(168)
-- df['rolling_mean_24'] = df['precio'].rolling(24).mean()
-- df['rolling_std_24'] = df['precio'].rolling(24).std()
+- **Variable objetivo**: Precio
+- **Variables explicativas**:
+  - df['lag_1'] = df['precio'].shift(1)
 
+  - df['lag_24'] = df['precio'].shift(24)
+
+  - df['lag_168'] = df['precio'].shift(168)
+
+  - df['rolling_mean_24'] = df['precio'].rolling(24).mean()
+
+  - df['rolling_std_24'] = df['precio'].rolling(24).std()
 
 **Train-Test set:** 90/10
 
 ---
 
+**Párametros de GridSearch y TimeSeriesSplit**:
+
+- param_grid =
+
+  - 'n_estimators': [300, 325, 350, 375, 400, 425, 450],
+  - 'learning_rate': [0.02, 0.03, 0.04, 0.05, 0.06, 0.07],
+  - 'max_depth': [2, 3, 4, 5]
+
+- tscv = TimeSeriesSplit(n_splits=5)
+- xgb = XGBRegressor(random_state=42, reg_alpha=5, reg_lambda=1)
+- grid_search = GridSearchCV
+  - estimator=xgb,
+  - param_grid=param_grid,
+  - scoring='neg_mean_absolute_error',
+  - cv=tscv,
+  - n_jobs=-1,
+  - verbose=2
+
 **Hiperparámetros óptimos encontrados:**
+
 - learning_rate': 0.04
 - 'max_depth': 3
 - 'n_estimators': 375
 - Mejor MAE con validación cruzada: 6.00
+
 ---
+
 Evaluación sobre el modelo:
 
-| Métrica | Test | Predicción | 
-|---|---|---|
-| **MAE** | 6.3381 | 6.7529 |
-| **RMSE** | 10.7758 | 11.1385 |
-| **R²** | 0.9164 | 0.9530 |
+| Métrica  | Test    | Predicción |
+| -------- | ------- | ---------- |
+| **MAE**  | 6.3381  | 6.7529     |
+| **RMSE** | 10.7758 | 11.1385    |
+| **R²**   | 0.9164  | 0.9530     |
+
 ---
+![alt text](pred_XG_m2.png)
+
+---
+
 ### Modelo 2.3
 
-   - df['lag_1'] = df['precio'].shift(1)
-   - df['lag_24'] = df['precio'].shift(24)
-   - df['lag_168'] = df['precio'].shift(168)
-   - df['rolling_mean_24'] = df['precio'].rolling(24).mean()
-   - df['rolling_std_24'] = df['precio'].rolling(24).std()
-   - df['rolling_mean_24_eolica'] = df['generacion_eolica'].rolling(24).mean()
-   - df['rolling_std_24_eolica'] = df['generacion_eolica'].rolling(24).std()
-   - df['rolling_mean_24_solar'] = df['generacion_solar'].rolling(24).mean()
-   - df['rolling_std_24_solar'] = df['generacion_solar'].rolling(24).std()
-   - df['rolling_mean_24_demanda'] = df['demanda_real'].rolling(24).mean()
-   - df['rolling_std_24_demanda'] = df['demanda_real'].rolling(24).std()
+- **Variable objetivo**: Precio
+- **Variables explicativas**:
+  - df['lag_1'] = df['precio'].shift(1)
+
+  - df['lag_24'] = df['precio'].shift(24)
+
+  - df['lag_168'] = df['precio'].shift(168)
+
+  - df['rolling_mean_24'] = df['precio'].rolling(24).mean()
+
+  - df['rolling_std_24'] = df['precio'].rolling(24).std()
+
+  - df['rolling_mean_24_eolica'] = df['generacion_eolica'].rolling(24).mean()
+
+  - df['rolling_std_24_eolica'] = df['generacion_eolica'].rolling(24).std()
+
+  - df['rolling_mean_24_solar'] = df['generacion_solar'].rolling(24).mean()
+
+  - df['rolling_std_24_solar'] = df['generacion_solar'].rolling(24).std()
+
+  - df['rolling_mean_24_demanda'] = df['demanda_real'].rolling(24).mean()
+
+  - df['rolling_std_24_demanda'] = df['demanda_real'].rolling(24).std()
 
 **Train-Test set:** 90/10
 
 ---
 
+**Párametros de GridSearch y TimeSeriesSplit**:
+
+- param_grid =
+
+  - 'n_estimators': [300, 325, 350, 375, 400, 425, 450],
+  - 'learning_rate': [0.02, 0.03, 0.04, 0.05, 0.06, 0.07],
+  - 'max_depth': [2, 3, 4, 5]
+
+- tscv = TimeSeriesSplit(n_splits=5)
+
+- xgb = XGBRegressor(random_state=42, reg_alpha=5, reg_lambda=1)
+
+- grid_search = GridSearchCV
+  - estimator=xgb,
+  - param_grid=param_grid,
+  - scoring='neg_mean_absolute_error',
+  - cv=tscv,
+  - n_jobs=-1,
+  - verbose=2
+
 **Hiperparámetros óptimos encontrados:**
-- learning_rate': 0.03
-- 'max_depth': 3
-- 'n_estimators': 300
-- Mejor MAE con validación cruzada: 6.11
 
-
----
-Evaluación sobre el modelo:
-
-| Métrica | Test | Predicción | 
-|---|---|---|
-| **MAE** | 7.6670 | 7.7443 |
-| **RMSE** | 11.5923 | 12.9418 |
-| **R²** | 0.9505 | 0.9366 |
----
-### Modelo 2.3
-
-   - df['lag_1'] = df['precio'].shift(1)
-   - df['lag_24'] = df['precio'].shift(24)
-   - df['lag_168'] = df['precio'].shift(168)
-   - df['rolling_mean_24'] = df['precio'].rolling(24).mean()
-   - df['rolling_std_24'] = df['precio'].rolling(24).std()
-   - df['rolling_mean_24_eolica'] = df['generacion_eolica'].rolling(24).mean()
-   - df['rolling_std_24_eolica'] = df['generacion_eolica'].rolling(24).std()
-   - df['rolling_mean_24_solar'] = df['generacion_solar'].rolling(24).mean()
-   - df['rolling_std_24_solar'] = df['generacion_solar'].rolling(24).std()
-   - df['rolling_mean_24_demanda'] = df['demanda_real'].rolling(24).mean()
-   - df['rolling_std_24_demanda'] = df['demanda_real'].rolling(24).std()
-
-**Train-Test set:** 90/10
-
----
-**Hiperparámetros óptimos encontrados:**
 - learning_rate': 0.03
 - 'max_depth': 3
 - 'n_estimators': 300
@@ -201,9 +253,13 @@ Evaluación sobre el modelo:
 
 Evaluación sobre el modelo:
 
-| Métrica | Test | Predicción | 
-|---|---|---|
-| **MAE** | 6.2932 | 7.4174 |
-| **RMSE** | 9.4810 | 12.0819 |
-| **R²** | 0.8947 | 0.9447 |
+| Métrica  | Test    | Predicción |
+| -------- | ------- | ---------- |
+| **MAE**  | 7.6670  | 7.7443     |
+| **RMSE** | 11.5923 | 12.9418    |
+| **R²**   | 0.9505  | 0.9366     |
+
+---
+![alt text](pred_XG_m3.png)
+
 ---

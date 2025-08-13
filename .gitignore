@@ -21,6 +21,7 @@ prueba_main
 env_sarimax
 env_xgboost
 env_tft
+env_prueba
 .venv
 # Carpetas
 Codigos/modelos/archivos/

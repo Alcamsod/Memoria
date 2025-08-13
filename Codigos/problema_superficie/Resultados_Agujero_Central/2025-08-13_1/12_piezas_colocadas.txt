@@ -1,0 +1,19 @@
+Resultados del empaquetado - 12 piezas colocadas
+Dimensiones del contenedor: 200x150
+Margen aplicado a cada pieza: 5
+Agujero en (x,y,w,h): (75, 50, 50, 50)
+------------------------------------------------------------
+Formato: Pieza N: x={x}, y={y}, ancho={ancho}, alto={alto}
+------------------------------------------------------------
+Pieza 1  : x=2.50, y=2.50, w=70.00, h=40.00
+Pieza 2  : x=77.50, y=2.50, w=60.00, h=40.00
+Pieza 3  : x=142.50, y=2.50, w=50.00, h=30.00
+Pieza 4  : x=2.50, y=107.50, w=50.00, h=50.00
+Pieza 5  : x=57.50, y=107.50, w=10.00, h=20.00
+Pieza 6  : x=57.50, y=132.50, w=10.00, h=20.00
+Pieza 7  : x=2.50, y=47.50, w=50.00, h=50.00
+Pieza 8  : x=57.50, y=47.50, w=10.00, h=10.00
+Pieza 9  : x=57.50, y=62.50, w=10.00, h=10.00
+Pieza 10 : x=132.50, y=47.50, w=60.00, h=40.00
+Pieza 11 : x=197.50, y=47.50, w=90.00, h=20.00
+Pieza 12 : x=292.50, y=47.50, w=30.00, h=40.00

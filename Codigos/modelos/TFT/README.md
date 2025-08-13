@@ -81,7 +81,12 @@ Los paquetes utilizados se incluyen en el requirements:
 
 Los diferentes resultados del modelo vienen en función del los hiperparámetros introducidos al TFT.
 
-### Modelo 1.1 SIN búsqueda: Parámetros
+### Modelo 1.1 SIN búsqueda
+
+**Parámetros**:
+   - max_epochs=5,
+   - limit_train_batches=50,
+   - limit_val_batches=20,
 
 df['rolling_mean_24'] = df['precio'].rolling(24).mean()
 df['rolling_std_24'] = df['precio'].rolling(24).std()
@@ -91,15 +96,18 @@ df['rolling_mean_24_solar'] = df['generacion_solar'].rolling(24).mean()
 df['rolling_std_24_solar'] = df['generacion_solar'].rolling(24).std()
 df['rolling_mean_24_demanda'] = df['demanda_real'].rolling(24).mean()
 df['rolling_std_24_demanda'] = df['demanda_real'].rolling(24).std()
+---
 
 | Métrica  | Test   | Predicción |
 | -------- | ------ | ---------- |
-| **MAE**  | 6.2932 | 7.4174     |
-| **RMSE** | 9.4810 | 12.0819    |
-| **R²**   | 0.8947 | 0.9447     |
+| **MAE**  | 15.16  |   45.63    |
+| **RMSE** | 21.10  |   56.12    |
+| **R²**   | 0.34   |   -0.19    |
 
 ---
+![alt text](TFT_predSin.png)
 
+---
 ### Modelo 1.2 CON búsqueda: Parámetros
 
 Para este segundo, integramos también las siguientes variables:
@@ -112,11 +120,60 @@ df['rolling_mean_24_solar'] = df['generacion_solar'].rolling(24).mean()
 df['rolling_std_24_solar'] = df['generacion_solar'].rolling(24).std()
 df['rolling_mean_24_demanda'] = df['demanda_real'].rolling(24).mean()
 df['rolling_std_24_demanda'] = df['demanda_real'].rolling(24).std()
+precio lagged 24
+precio lagged 168
+---
+
+**Hiperparámetros óptimos encontrados:**
+INFO:pytorch_lightning.utilities.rank_zero:`Trainer.fit` stopped: `max_epochs=30` reached.
+[I 2025-08-11 19:45:40,383] Trial 0 finished with value: 7.060738563537598 and parameters: {'gradient_clip_val': 0.07996215281832342, 'hidden_size': 17, 'dropout': 0.1508356315759504, 'hidden_continuous_size': 13, 'attention_head_size': 3, 'learning_rate': 0.0013507347292972113}. Best is trial 0 with value: 7.060738563537598.
+<------------ MEJORES HIPERPARÁMETROS ENCONTRADOS ------------>
+{'gradient_clip_val': 0.07996215281832342, 'hidden_size': 17, 'dropout': 0.1508356315759504, 'hidden_continuous_size': 13, 'attention_head_size': 3, 'learning_rate': 0.0013507347292972113}
+
+---
+
+**Métricas:**
+
+---
 
 | Métrica  | Test   | Predicción |
 | -------- | ------ | ---------- |
-| **MAE**  | 6.2932 | 7.4174     |
-| **RMSE** | 9.4810 | 12.0819    |
-| **R²**   | 0.8947 | 0.9447     |
+| **MAE**  | 19.43  |   25.87    |
+| **RMSE** | 24.10  |   30.19    |
+| **R²**   | 0.52   |   0.45     |
+
+---
+
+![alt text](TFT_predCon.png)
+
+---
+
+### Modelo 1.3: CON búsqueda GOOGLE COLAB, búsqueda completa
+
+**Variables**:
+df['rolling_mean_24'] = df['precio'].rolling(24).mean()
+df['rolling_std_24'] = df['precio'].rolling(24).std()
+df['rolling_mean_24_eolica'] = df['generacion_eolica'].rolling(24).mean()
+df['rolling_std_24_eolica'] = df['generacion_eolica'].rolling(24).std()
+df['rolling_mean_24_solar'] = df['generacion_solar'].rolling(24).mean()
+df['rolling_std_24_solar'] = df['generacion_solar'].rolling(24).std()
+df['rolling_mean_24_demanda'] = df['demanda_real'].rolling(24).mean()
+df['rolling_std_24_demanda'] = df['demanda_real'].rolling(24).std()
+precio lagged 24
+precio lagged 168
+
+**Hiperparámetros óptimos encontrados:**
+{'gradient_clip_val': 0.07996215281832342, 'hidden_size': 17, 'dropout': 0.1508356315759504, 'hidden_continuous_size': 13, 'attention_head_size': 3, 'learning_rate': 0.0013507347292972113}
+
+---
+CAMBIAR
+| Métrica  | Test   | Predicción |
+| -------- | ------ | ---------- |
+| **MAE**  | 15.16  |   45.63    |
+| **RMSE** | 21.10  |   56.12    |
+| **R²**   | 0.34   |   -0.19    |
+
+---
+![alt text](modelos/TFT/TFT_predCon.png)
 
 ---

@@ -20,9 +20,13 @@ Este repositorio contiene los códigos para la implementación de modelos de pre
 │   │   ├── requirements.txt
 │   │   └── SARIMAX.ipynb
 │   │
+│   ├── RandomForest
+│   │   ├── README.md
+│   │   ├── requirements.txt
+│   │   └── RandomForest.ipynb
+│   │
 │   ├── TFT
 │   │   ├── checkpoints_tft_sinbusqueda
-│   │   ├── checkpoints_tft_conbusqueda
 │   │   ├── lightning_logs
 │   │   ├── README.md
 │   │   ├── requirements.txt
@@ -37,13 +41,18 @@ Este repositorio contiene los códigos para la implementación de modelos de pre
 │   ├── Dockerfile
 │   └── requirements.txt
 │
-└──README.md
+├──README.md
+│
+└──RESULTADOS.md
 ```
 
 ## Modelos Incluidos
 
 - **SARIMAX**  
   Modelo estadístico tradicional para series de tiempo.
+
+- **Random Forest**  
+  Modelo de machine learning basado en árboles de decisión.
 
 - **TFT (Temporal Fusion Transformer)**  
   Modelo de deep learning avanzado diseñado para series de tiempo multivariadas. Útil para capturar relaciones complejas y hacer predicciones con alta precisión.

@@ -64,11 +64,26 @@ Los paquetes necesarios se encuentran en el requirements.txt. (py 3.11) Para ins
 
 ### Modelo 1.1: Parámetros (2,1,1)(1,1,1,24)
 
-- **Variables Endógenas**: Precio
-- **Variables Exógenas temporales**: Hora, día de la semana, mes del año
-- **Variables Exógenas adicionales (desfasadas 24 horas hacia atrás)**: Demanda real, generación eólica y solar, lag24 y lag168 (precio de la luz 24 y 168 horas antes), la media del dia anterior y la desviacion tipica para todas las varaibles (luz, generaciones y demanda).
+**Variable endógena:** Precio
+**Variables exógenas:**
+  - 'generacion_eolica',
+  - 'generacion_solar', 
+  - 'demanda_real',
+  - 'hora', 
+  - 'dia_semana',
+  - 'mes',
+  - 'lag24'
+  - 'lag168'
+  - 'rolling_mean_24', 
+  - 'rolling_std_24',
+  - 'rolling_mean_24_eolica', 
+  - 'rolling_std_24_eolica',
+  - 'rolling_mean_24_solar', 
+  - 'rolling_std_24_solar',
+  - 'rolling_mean_24_demanda', 
+  - 'rolling_std_24_demanda',
 
-
+---
 | Métrica | Test | Predicción | 
 |---|---|---|
 | **MAE** | 46.72 | 55.36 |
@@ -79,29 +94,61 @@ Los paquetes necesarios se encuentran en el requirements.txt. (py 3.11) Para ins
 
 ### Modelo 1.2: Parámetros (1,1,1)(1,1,1,24)
 
-- **Variables Endógenas**: Precio
-- **Variables Exógenas temporales**: Hora, día de la semana, mes del año
-- **Variables Exógenas adicionales (desfasadas 24 horas hacia atrás)**: Demanda real, generación eólica y solar, lag24 y lag168 (precio de la luz 24 y 168 horas antes), la media del dia anterior y la desviacion tipica para todas las varaibles (luz, generaciones y demanda).
+**Variable endógena:** Precio
+**Variables exógenas:**
+  - 'generacion_eolica',
+  - 'generacion_solar', 
+  - 'demanda_real',
+  - 'hora', 
+  - 'dia_semana',
+  - 'mes',
+  - 'lag24'
+  - 'lag168'
+  - 'rolling_mean_24', 
+  - 'rolling_std_24',
+  - 'rolling_mean_24_eolica', 
+  - 'rolling_std_24_eolica',
+  - 'rolling_mean_24_solar', 
+  - 'rolling_std_24_solar',
+  - 'rolling_mean_24_demanda', 
+  - 'rolling_std_24_demanda',
 
-
+---
 | Métrica | Test | Predicción | 
 |---|---|---|
-| **MAE** | 46.72 | 55.36 |
-| **RMSE** | 60.92 | 67.43 |
-| **R²** | -4.79 | -1.10 |
+| **MAE** | 47.11 | 54.91 |
+| **RMSE** | 61.77 | 67.04 |
+| **R²** | -4.96 | -1.08 |
 ---|
 
 
 ### Modelo 1.3: Parámetros (2,1,0)(1,1,0,24)
 
-- **Variables Endógenas**: Precio
-- **Variables Exógenas temporales**: Hora, día de la semana, mes del año
-- **Variables Exógenas adicionales (desfasadas 24 horas hacia atrás)**: Demanda real, generación eólica y solar, lag24 y lag168 (precio de la luz 24 y 168 horas antes), la media del dia anterior y la desviacion tipica para todas las varaibles (luz, generaciones y demanda).
+**Variable endógena:** Precio
+**Variables exógenas:**
+  - 'generacion_eolica',
+  - 'generacion_solar', 
+  - 'demanda_real',
+  - 'hora', 
+  - 'dia_semana',
+  - 'mes',
+  - 'lag24'
+  - 'lag168'
+  - 'rolling_mean_24', 
+  - 'rolling_std_24',
+  - 'rolling_mean_24_eolica', 
+  - 'rolling_std_24_eolica',
+  - 'rolling_mean_24_solar', 
+  - 'rolling_std_24_solar',
+  - 'rolling_mean_24_demanda', 
+  - 'rolling_std_24_demanda',
+
+---
 
 
 | Métrica | Test | Predicción | 
 |---|---|---|
-| **MAE** | 6.2932 | 7.4174 |
-| **RMSE** | 9.4810 | 12.0819 |
-| **R²** | 0.8947 | 0.9447 |
+| **MAE** | 47.30 | 55.25 |
+| **RMSE** | 61.99 | 67.55 |
+| **R²** | -5.00 | -1.11 |
 ---|
