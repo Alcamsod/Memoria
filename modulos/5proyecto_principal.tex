@@ -298,12 +298,14 @@ En las siguientes gráficas mostramos los resultados obtenidos en uno de los ent
 %
 %
 \subsubsection{TFT}
+\label{TFT}
 %
 %
 %
 El Temporal Fusion Transformer (TFT) es una arquitectura de deep learning diseñada específicamente para el forecasting de series temporales multi-horizonte. Combina mecanismos de atención (propios de los Transformers) con redes neuronales recurrentes y capas de gating. Sus características clave son:
 
 \begin{itemize}
+    
     \item \textbf{Manejo de Múltiples Tipos de Variables:} Integra de forma nativa variables estáticas, entradas conocidas en el futuro y variables observadas en el pasado (ej. precio, demanda).
     \item \textbf{Aprendizaje de Patrones a Múltiples Escalas:} Puede identificar patrones temporales tanto a corto como a largo plazo simultáneamente.
 \end{itemize}
@@ -439,35 +441,35 @@ Para la elección de lo que podemos entender como \textit{mejor modelo} se han c
         RF (SIN búsqueda) & 5.17  & 8.63  & 0.92 & 6.75  & 11.71 & 0.94 \\
         RF (CON búsqueda) & 10.09 & 14.38 & 0.76 & 13.36 & 18.64 & 0.87 \\
         TFT (SIN búsqueda)& 15.16    & 21.10    & 0.34   & 45.63    & 56.12          & -0.19 \\
-        TFT (CON búsqueda)&19.43    & 24.10    & 0.52   & 25.87    & 30.19          & 0.45   \\
-        TFT (CON búsqueda completa)& 7.02  & 11.30 & 0.98 & 7.20  & 11.60 & 0.97 \\
+        TFT (CON búsqueda NO completa)&19.43    & 24.10    & 0.52   & 25.87    & 30.19          & 0.45   \\
     \end{tabular}
     \caption{Resultados por modelos para cada conjunto de datos.}
     \label{tab:resultados_modelos}
 \end{table}
 
-A la vista de los resultados de la tabla \ref{tab:resultados_modelos} podemos observar que el modelo \textit{SARIMAX} es el que peores métricas muestra, no consiguiendo captar de manera general el comportamiento de la serie temporal. Cabe destacar en este punto que también se trata del modelo que al que menos tiempo he invertido ya que era consciente que los otros iban a reportar mejores resultados de manera más sencilla y rápida. Por otro lado, los modelos que más destacan son el \textit{XGBoost} y el \textit{TFT}.
+A la vista de los resultados de la tabla \ref{tab:resultados_modelos} podemos observar que el modelo \textit{SARIMAX} es el que peores métricas muestra, no consiguiendo captar de manera general el comportamiento de la serie temporal. Cabe destacar en este punto que también se trata del modelo que al que menos tiempo he invertido ya que era consciente que los otros iban a reportar mejores resultados de manera más sencilla y rápida. Por otro lado, los resultados de los modelos \textit{XGBoost} y \textit{RandomForest} son parejos y muestran un buen rendimiento, siendo el \textit{XGBoost} ligeramente mejor.
 
-Este segundo, como ya se ha comentado, es un modelo más complejo. Se trata de una adaptación de los \textit{Transformers} (modelos de deep learning utilizados en el procesamiento de lenguaje natural como GPT) a series temporales. Sin embargo, en la relación tiempo o dificultad y resultados ambos se encuentram parejos. En la siguiente gráfica se muestran la predicción final para ambos modelos, con intervalos de confianza al $95\%$.
+En último lugar, para el TFT no he llegado a conocer los resultados finales. La implementación de la búsqueda de hiperparámetros la realicé, tal y como se ha mostrado en el \Cref{TFT}, pero debido al gran tiempo que requiere no pude realizar el análisis de este modelo. Sin embargo, este es un modelo más complejo. Se trata de una adaptación de los \textit{Transformers} (modelos de deep learning utilizados en el procesamiento de lenguaje natural como GPT) a series temporales, por lo que de él se esperan unos mejores resultados, comparables a los del \textit{XGBoost}.
+
 \begin{figure}[H]
 \centering
-\begin{subfigure}[b]{0.45\textwidth}
+\begin{subfigure}[b]{0.7\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figuras/XGBoost_prediccion.png}
-\caption[Predicción mediante XGBoost]{XGBoost.}
-\label{PrediccionXGBoost}
+\caption[Resultados \textit{XGBoost}]{Resultados para el modelo \textit{XGBoost}.}
+\label{ResultadosXGBoost}
 \end{subfigure}
-\begin{subfigure}[b]{0.45\textwidth}
+\begin{subfigure}[b]{0.7\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figuras/TFT_predCon1.png}
-\caption[Predicción mediante TFT]{TFT.}
-\label{PrediccionTFT}
+\caption[Resultados preliminares TFT.]{Resultados preliminares TFT, sin búsqueda exaustiva de hiperparámetros.}
+\label{ResultadosTFT}
 \end{subfigure}
-\caption{Predicciones para junio de 2025.}
-\label{PrediccionesLuz}
 \end{figure}
 
-Por motivos de tiempo no soy consciente de si se han realizado más búsquedas para el TFT o algún otro modelo ni de la elección final. Sin embargo, mi recomendación y sensación, dentro del contexto del proyecto, es que el modelo \textit{XGBoost} es la mejor elección en la relación de tiempo y resultados. El interés principal recaía en el comportamiento y la elección del instante en el que llevar a cabo las fundiciones y no tanto un precio muy exacto. Por lo tanto, el modelo \textit{XGBoost} es el que mejor se adapta a las necesidades del proyecto, siendo capaz de predecir con una precisión aceptable y con un tiempo de entrenamiento razonable.
+
+
+En conclusión, mi recomendación y sensación, dentro del contexto del proyecto, es que el modelo \textit{XGBoost} es la mejor elección en la relación de tiempo y resultados. El interés principal recaía en el comportamiento y la elección del instante en el que llevar a cabo las fundiciones y no tanto un precio muy exacto. Por lo tanto, el modelo \textit{XGBoost} es el que mejor se adapta a las necesidades del proyecto, siendo capaz de predecir con una precisión aceptable y con un tiempo de entrenamiento razonable.
 %
 %
 %
