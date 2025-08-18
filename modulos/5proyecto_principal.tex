@@ -347,12 +347,12 @@ Respecto a la decisión de hiperparámetros de nuestro modelo TFT es más compli
 \begin{itemize}
     \item \textbf{learning rate}: Este hiperparámetro, como se ha mencionado en el XGBoost, controla el tamaño del paso en cada iteración. Valores más altos aceleran la convergencia pero puede reportar resultados peores a costa de ellos. Por otro lado, un valor extremadamente bajo hace que la convergencia sea más lenta y puede dar lugar a que en el proceso de optimización de la función de pérdida encuentre un mínimo local y no obtenga el resultado óptimo.
     
-    \item \textbf{input chunk length}: Define el número de pasos de tiempo pasados que el modelo utiliza como entrada para hacer una predicción. En nuestro caso, gicimos uso de tres mese de datos, es decir, $24 \times 7 \times 4 \times 3$ pasos de tiempo.
+    \item \textbf{input chunk length}: Define el número de pasos de tiempo pasados que el modelo utiliza como entrada para hacer una predicción. En nuestro caso, hicimos uso de tres meses de datos, es decir, $24 \times 7 \times 4 \times 3$ pasos de tiempo.
     \item \textbf{output chunk length}: Determina el número de pasos de tiempo futuros que el modelo debe predecir. Como se mencionó anteriormente, la predicción se realió para un mes, lo que significa $24 \times 7 \times 4$ pasos.
      
     \item \textbf{hidden size}: Se refiere a la dimensión de las capas ocultas que forman la red. En este caso, un valor demasiado alto puede elevar la complejidad del modelo, llevando a \textit{overfitting}.
      
-    \item \textbf{attention heads}: Definde el número de capas de atención del modelo, es decir, nos permite regular la \textit{atención} que el TFT va a prestar a los diferentes componentes de la serie temporal de manera simultánea. Este hiperparámetro es clave para capturar las relación a largo plazo en nuestra serie.
+    \item \textbf{attention heads}: Define el número de capas de atención del modelo, es decir, nos permite regular la \textit{atención} que el TFT va a prestar a los diferentes componentes de la serie temporal de manera simultánea. Este hiperparámetro es clave para capturar las relación a largo plazo en nuestra serie.
      
     \item \textbf{dropout}: Para este tipo de modelos, un valor entre 0.1-0.3 suele ser lo estándard. Este hiperparámetro es fundamental para la regularización, previniendo el \textit{overfitting}. Consiste en desactivar aleatoriamente un porcentaje de neuronas durante el entrenamiento.
 \end{itemize}
@@ -425,7 +425,7 @@ print(f"Número de parámetros del modelo: {tft.size() / 1e3:.1f}k")
 %
 %
 %
-Para la elección de lo que podemos entender como \textit{mejor modelo} se han comparado tres métricas: MAE, RMSE y R$^2$. Una vez entreneados los modelos sobre el conjunto de entrenamiento se realiza la prueba sobre el \textit{test set} y posteriormente validamos los resultados sobre otro conjunto, del que conocemos ya los valores reales, es decir, entrenamos nuestro modelo para conocer como predice sobre los datos que le hemos introducido y después probamos sobre un conjunto, a priori de variables desconocidas, comprobando así si hemos conseguido generalizar bien el comportamiento de de la serie temporal. En la tabla siguiente se muestran los valores mencionados:
+Para la elección de lo que podemos entender como \textit{mejor modelo} se han comparado tres métricas: MAE, RMSE y R$^2$. Una vez entrenados los modelos sobre el conjunto de entrenamiento se realiza la prueba sobre el \textit{test set} y posteriormente validamos los resultados sobre otro conjunto, del que conocemos ya los valores reales, es decir, entrenamos nuestro modelo para conocer como predice sobre los datos que le hemos introducido y después probamos sobre un conjunto, a priori de variables desconocidas, comprobando así si hemos conseguido generalizar bien el comportamiento de de la serie temporal. En la tabla siguiente se muestran los valores mencionados:
 \begin{table}[H]
     \centering
     \begin{tabular}{l|ccc|ccc}
@@ -462,7 +462,7 @@ En último lugar, para el TFT no he llegado a conocer los resultados finales. La
 \begin{subfigure}[b]{0.7\textwidth}
 \centering
 \includegraphics[width=\textwidth]{figuras/TFT_predCon1.png}
-\caption[Resultados preliminares TFT.]{Resultados preliminares TFT, sin búsqueda exaustiva de hiperparámetros.}
+\caption[Resultados preliminares TFT.]{Resultados preliminares TFT, sin búsqueda exhaustiva de hiperparámetros.}
 \label{ResultadosTFT}
 \end{subfigure}
 \end{figure}
@@ -526,9 +526,9 @@ Finalmente, debería considerarse el rendimiento $\eta$ del horno. Podríamos su
 \subsubsection{Implementación}
 %
 %
-Como se ha mencionado, el trasfondo teórico de un proceso como este es, en muchos casos, innecesario para dar una solución en el ámbito profesional, si bien es lo técnicamente correcto \footnote{Evidentemente, para llevarlo al grado más óptimo habría que introducir pérdidas de calor, más factores disipativos que puedan afectar al proceso, etc.}. Sin embargo, entender este planteamiento es importante debido a que la solución que se le otorga a una empresa está fundamenteada en ello.
+Como se ha mencionado, el trasfondo teórico de un proceso como este es, en muchos casos, innecesario para dar una solución en el ámbito profesional, si bien es lo técnicamente correcto \footnote{Evidentemente, para llevarlo al grado más óptimo habría que introducir pérdidas de calor, más factores disipativos que puedan afectar al proceso, etc.}. Sin embargo, entender este planteamiento es importante debido a que la solución que se le otorga a una empresa está fundamentada en ello.
 
-Por lo general, no solo en este proyecto, sino también en la investigación realizada, lo más demandando en procesos de este tipo son las \textit{curvas de potencia} o respecto de otras magnitudes como el calor, temperatura... Del modelo planteado anteriormente podemos extraer ciertas conclusiones.
+Por lo general, no solo en este proyecto, sino también en la investigación realizada, lo más demandado en procesos de este tipo son las \textit{curvas de potencia} o respecto de otras magnitudes como el calor, temperatura... Del modelo planteado anteriormente podemos extraer ciertas conclusiones.
 
 Es habitual que las empresas no tengan acceso a un histórico muy detallado del proceso, por lo que en ocasiones contamos con medidas escasas, sin embargo, podemos observar como la potencia ($P = Q/t$) crece de manera proporcional al calentamiento y depende directamente de la masa y las propiedades térmicas del material. Por ejemplo, una curva de potencia típica muestra cómo varía la demanda energética a lo largo del ciclo de fundición: inicialmente, la potencia requerida es mayor durante el calentamiento rápido, disminuyendo una vez alcanzada la temperatura de fusión y estabilizándose durante el mantenimiento térmico (una etapa muy común en fundiciones por ejemplo para eliminar impurezas).
 
@@ -538,7 +538,7 @@ De igual modo, las curvas de temperatura permiten visualizar el perfil térmico 
 \subsection{Optimización de la superficie de enfriamiento}
 %
 %
-En último lugar, nos encontramos con el problema que aborda la distribución de las piezas metálicas obtenidas de la colada en una superficie para que enfríen. Cláramente, el objetivo es maximizar la cantidad de piezas depositadas en la misma de manera simultánea. Además de las condiciones lógicas de tamaño, se cuenta con otras restricciones como son que las piezas no son apilables (de ahí que se trate de un problema de superficie y no de volumen) y es necesario dejar unos márgenes de seguridad entre piezas. En la resolución de este problema participé en la propuesta de resolución pero no he llegado a implementar completamente ésta por lo que voy a detallar el flujo de trabajo. De manera anterior a este proceso se supone que se ha relizado la predicción de los precios de la luz y con ello una propuesta de planificación, de manera que ahora sería el momento de comprobar cómo se va a distribuir en la nave.
+En último lugar, nos encontramos con el problema que aborda la distribución de las piezas metálicas obtenidas de la colada en una superficie para que enfríen. Claramente, el objetivo es maximizar la cantidad de piezas depositadas en la misma de manera simultánea. Además de las condiciones lógicas de tamaño, se cuenta con otras restricciones como son que las piezas no son apilables (de ahí que se trate de un problema de superficie y no de volumen) y es necesario dejar unos márgenes de seguridad entre piezas. En la resolución de este problema participé en la propuesta de resolución pero no he llegado a implementar completamente ésta por lo que voy a detallar el flujo de trabajo. De manera anterior a este proceso se supone que se ha realizado la predicción de los precios de la luz y con ello una propuesta de planificación, de manera que ahora sería el momento de comprobar cómo se va a distribuir en la nave.
 \subsubsection{Tamaño de cajas}
      En función del diámetro de las piezas fundidas se asignan cajas, de forma cuadrada o rectangular, rellenas de arena en las que la pieza reposará hasta la siguiente fase del proceso
 \subsubsection{Chequeo de espacio} Una vez definidas las cajas, se comprueba si el área disponible es suficiente para albergar la carga de trabajo suficiente.
