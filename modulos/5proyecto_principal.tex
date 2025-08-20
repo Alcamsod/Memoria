@@ -9,7 +9,7 @@ Este trabajo trataba de la optimización del gasto energético de una empresa qu
 %
 %
 %
-Para llevar a cabo un modelo predictivo de los precios de la luz para una empresa hemos de realizar una serie de pasos. En primer lugar, como es evidente, debemos conocer y entender qué es lo que queremos predecir, bajo qué condiciones y qué variables afectan al precio de la luz, tanto naturales, como puede ser la demanda, la generación de ciertos tipos de energía, como aquellas relacionadas con la legislación vigente. Posteriormente debemos decidir cómo se extraeran los datos necesarios. Puesto que estamos hablando de un proyecto real, la empresa espera un proceso automatizado por lo que se debe tener en cuenta una extracción periódica de datos.
+Para llevar a cabo un modelo predictivo de los precios de la luz para una empresa hemos de realizar una serie de pasos. En primer lugar, como es evidente, debemos conocer y entender qué es lo que queremos predecir, bajo qué condiciones y qué variables afectan al precio de la luz, tanto naturales, como puede ser la demanda, la generación de ciertos tipos de energía, como aquellas relacionadas con la legislación vigente. Posteriormente debemos decidir cómo se extraerán los datos necesarios. Puesto que estamos hablando de un proyecto real, la empresa espera un proceso automatizado por lo que se debe tener en cuenta una extracción periódica de datos.
 
 Una vez planteado el contexto en el que vamos a movernos, debemos decidir qué modelos probar, conociendo sus ventajas y desventajas. Mi elección, basada en búsquedas de desarrollos similares, fue optar por tres modelos:
 \begin{description}
@@ -51,7 +51,7 @@ Este proceso consiste en la observación de los datos, su representación en dif
 
 A partir de los datos obtenidos con las gráficas, como se puede observar en la figura \cref{Precio vs tiempo}, se divide el histórico de datos en un conjunto de entrenamiento, otro de test y se deja uno de validación, en este caso de un mes, al igual que la predicción que queremos realizar, para comprobar el funcionamiento \textit{real} de nuestro modelo. Este proceso es el que se ha utilizado en la SARIMAX, Random Forest y el XGBoost.
 
-Observando la matriz de correlación (\cref{Matriz de correlacion}) se aprecia que la variable con mayor correlación negativa con el precio es la generación solar ($r \approx -0.38$), lo que sugiere que un aumento en la producción solar tiende a asociarse con una disminución en el precio. La demanda real presenta una correlación positiva moderada ($r \approx 0.25$) con el precio, mientras que la generación eólica muestra una relación más débil y ligeramente negativa. Las variables temporales (hora, día de la semana, mes) tienen correlaciones bajas, lo que indica que, si bien influyen en el precio, lo hacen de forma más indirecta o no lineal.
+Observando la matriz de correlación (\cref{Matriz de correlacion}) se aprecia que la variable con mayor correlación negativa respecto del precio es la generación solar ($r \simeq -0.38$), lo que sugiere que un aumento en la producción solar tiende a asociarse con una disminución en el precio. La demanda real presenta una correlación positiva moderada ($r \simeq 0.25$) con el precio, mientras que la generación eólica muestra una relación más débil y ligeramente negativa. Las variables temporales (hora, día de la semana, mes) tienen correlaciones bajas, lo que indica que, si bien influyen en el precio, lo hacen de forma más indirecta o no lineal.
 
 En cuanto a los boxplots, puede observarse cómo en el ámbito anual (figura \cref{Boxplotanual}) los meses de abril y mayo concentran los precios más bajos, mientras que en febrero se registran picos más altos. También se aprecia que la variabilidad del precio es mayor en los meses de invierno y menor en primavera. En el análisis diario (figura \cref{Booxplotdiario}), se identifican claramente las denominadas \textit{horas valle}, comprendidas aproximadamente entre las 10:00 y las 15:00, y las \textit{horas pico}, situadas en el tramo de 18:00 a 20:00. 
 
@@ -345,16 +345,16 @@ La predicción con TFT se realiza en un solo paso:
 %
 Respecto a la decisión de hiperparámetros de nuestro modelo TFT es más complicada. Este tipo de modelos son más exigentes en el formato de entrada de los datos y más sensible a las configuraciones, si bien lo compensa con un gran rendimiento. Por ello no me adentraré mucho en ello:
 \begin{itemize}
-    \item \textbf{learning rate}: Este hiperparámetro, como se ha mencionado en el XGBoost, controla el tamaño del paso en cada iteración. Valores más altos aceleran la convergencia pero puede reportar resultados peores a costa de ellos. Por otro lado, un valor extremadamente bajo hace que la convergencia sea más lenta y puede dar lugar a que en el proceso de optimización de la función de pérdida encuentre un mínimo local y no obtenga el resultado óptimo.
+    \item \textbf{Learning rate}: Este hiperparámetro, como se ha mencionado en el XGBoost, controla el tamaño del paso en cada iteración. Valores más altos aceleran la convergencia pero puede reportar resultados peores a costa de ellos. Por otro lado, un valor extremadamente bajo hace que la convergencia sea más lenta y puede dar lugar a que en el proceso de optimización de la función de pérdida encuentre un mínimo local y no obtenga el resultado óptimo.
     
-    \item \textbf{input chunk length}: Define el número de pasos de tiempo pasados que el modelo utiliza como entrada para hacer una predicción. En nuestro caso, hicimos uso de tres meses de datos, es decir, $24 \times 7 \times 4 \times 3$ pasos de tiempo.
-    \item \textbf{output chunk length}: Determina el número de pasos de tiempo futuros que el modelo debe predecir. Como se mencionó anteriormente, la predicción se realió para un mes, lo que significa $24 \times 7 \times 4$ pasos.
+    \item \textbf{Input chunk length}: Define el número de pasos de tiempo pasados que el modelo utiliza como entrada para hacer una predicción. En nuestro caso, hicimos uso de tres meses de datos, es decir, $24 \times 7 \times 4 \times 3$ pasos de tiempo.
+    \item \textbf{Output chunk length}: Determina el número de pasos de tiempo futuros que el modelo debe predecir. Como se mencionó anteriormente, la predicción se realió para un mes, lo que significa $24 \times 7 \times 4$ pasos.
      
-    \item \textbf{hidden size}: Se refiere a la dimensión de las capas ocultas que forman la red. En este caso, un valor demasiado alto puede elevar la complejidad del modelo, llevando a \textit{overfitting}.
+    \item \textbf{Hidden size}: Se refiere a la dimensión de las capas ocultas que forman la red. En este caso, un valor demasiado alto puede elevar la complejidad del modelo, llevando a \textit{overfitting}.
      
-    \item \textbf{attention heads}: Define el número de capas de atención del modelo, es decir, nos permite regular la \textit{atención} que el TFT va a prestar a los diferentes componentes de la serie temporal de manera simultánea. Este hiperparámetro es clave para capturar las relación a largo plazo en nuestra serie.
+    \item \textbf{Attention heads}: Define el número de capas de atención del modelo, es decir, nos permite regular la \textit{atención} que el TFT va a prestar a los diferentes componentes de la serie temporal de manera simultánea. Este hiperparámetro es clave para capturar las relación a largo plazo en nuestra serie.
      
-    \item \textbf{dropout}: Para este tipo de modelos, un valor entre 0.1-0.3 suele ser lo estándard. Este hiperparámetro es fundamental para la regularización, previniendo el \textit{overfitting}. Consiste en desactivar aleatoriamente un porcentaje de neuronas durante el entrenamiento.
+    \item \textbf{Dropout}: Para este tipo de modelos, un valor entre 0.1-0.3 suele ser lo estándard. Este hiperparámetro es fundamental para la regularización, previniendo el \textit{overfitting}. Consiste en desactivar aleatoriamente un porcentaje de neuronas durante el entrenamiento.
 \end{itemize}
 
 En nuestro caso particular, muestro a continuación parte del código utilizado en el que se ve cómo se refina la configuración:
